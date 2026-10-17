@@ -24,6 +24,8 @@ import {
   subscribeToProducts,
   subscribeToCategories,
   baselineProducts,
+  syncAllEverywhere,
+  DELETED_PRODUCT_IDS,
 } from '../../services/catalogService';
 import { handleImageError } from '../../utils/helpers';
 
@@ -40,21 +42,20 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 }) => {
   const [activeSection, setActiveSection] = useState<DashboardSection>('overview');
 
-  // Core Data - Initialized immediately with baseline products for instantaneous load
+  // Core Data - Initialized immediately with clean baseline products (strictly excluding duplicates)
   const [products, setProducts] = useState<StoreItem[]>(() => {
-    if (typeof window !== 'undefined') {
-      try {
-        const raw = localStorage.getItem('anmolkala_active_catalog');
-        if (raw) {
-          const parsed = JSON.parse(raw);
-          if (Array.isArray(parsed) && parsed.length > 0) return parsed;
-        }
-      } catch (e) {}
-    }
-    return baselineProducts;
+    return baselineProducts.filter(
+      (p: StoreItem) => !DELETED_PRODUCT_IDS.has(p.id) && !DELETED_PRODUCT_IDS.has(String(p.id).toUpperCase())
+    );
   });
   const [categories, setCategories] = useState<CategoryItem[]>(() => {
-    const unique = Array.from(new Set(baselineProducts.map((p: StoreItem) => p.category.trim()))).filter(Boolean).sort();
+    const unique = Array.from(
+      new Set(
+        baselineProducts
+          .filter((p: StoreItem) => !DELETED_PRODUCT_IDS.has(p.id))
+          .map((p: StoreItem) => p.category.trim())
+      )
+    ).filter(Boolean).sort();
     return unique.map((name: string, i: number): CategoryItem => ({
       id: `cat-${i + 1}`,
       name: String(name),
@@ -192,9 +193,41 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     }
   };
 
+  const [isSyncingAll, setIsSyncingAll] = useState(false);
+  const handleSyncAll = async () => {
+    setIsSyncingAll(true);
+    try {
+      const res = await syncAllEverywhere(session?.token);
+      showToast(res.message);
+      await loadData(true);
+    } catch (e: any) {
+      showToast(`Sync error: ${e.message}`);
+    } finally {
+      setIsSyncingAll(false);
+    }
+  };
+
   useEffect(() => {
-    // Silently synchronize in background without blocking initial render
-    loadData(true);
+    // Initial fetch
+    loadData(false);
+
+    // Live subscription to real-time events across every phone and computer
+    const unsub = subscribeToProducts((freshProds) => {
+      if (Array.isArray(freshProds) && freshProds.length > 0) {
+        setProducts(freshProds);
+      }
+    });
+
+    const unsubCats = subscribeToCategories((freshCats) => {
+      if (Array.isArray(freshCats) && freshCats.length > 0) {
+        setCategories(freshCats);
+      }
+    });
+
+    return () => {
+      unsub();
+      unsubCats();
+    };
   }, []);
 
   // Catalogue Aggregate Counts (authoritative live count)
@@ -941,6 +974,30 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <button
               type="button"
+              onClick={handleSyncAll}
+              disabled={isSyncingAll}
+              title="Push and broadcast all changes live immediately across Website, Supabase, and GitHub"
+              style={{
+                background: isSyncingAll ? '#e2e8f0' : 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                border: 'none',
+                borderRadius: '6px',
+                padding: '7px 14px',
+                fontSize: '12px',
+                fontWeight: 700,
+                color: '#ffffff',
+                cursor: isSyncingAll ? 'not-allowed' : 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                whiteSpace: 'nowrap',
+                boxShadow: '0 2px 8px rgba(16, 185, 129, 0.35)',
+              }}
+            >
+              <span>{isSyncingAll ? '⏳' : '⚡'}</span>
+              <span>{isSyncingAll ? 'Syncing...' : 'Sync Live Everywhere'}</span>
+            </button>
+            <button
+              type="button"
               onClick={onBackToStore}
               title="View live website"
               style={{
@@ -1050,11 +1107,33 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                   Welcome to Anmol Kala Admin
                 </h1>
                 <p style={{ margin: 0, fontSize: '14px', color: '#cbd5e1', maxWidth: '640px', lineHeight: 1.5 }}>
-                  Manage your craft catalogue, upload videos with mandatory cover photos, and view catalogue totals.
+                  Manage your craft catalogue, upload videos with mandatory cover photos, and sync live to website, Supabase, and GitHub instantly.
                 </p>
               </div>
 
               <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+                <button
+                  type="button"
+                  onClick={handleSyncAll}
+                  disabled={isSyncingAll}
+                  style={{
+                    background: isSyncingAll ? '#64748b' : 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                    color: '#ffffff',
+                    border: 'none',
+                    borderRadius: '8px',
+                    padding: '11px 18px',
+                    fontSize: '13px',
+                    fontWeight: 800,
+                    cursor: isSyncingAll ? 'not-allowed' : 'pointer',
+                    boxShadow: '0 4px 12px rgba(16, 185, 129, 0.35)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                  }}
+                >
+                  <span>{isSyncingAll ? '⏳' : '⚡'}</span>
+                  <span>{isSyncingAll ? 'Syncing...' : 'Sync Live Everywhere'}</span>
+                </button>
                 <button
                   type="button"
                   onClick={handleOpenAddPhotoProduct}

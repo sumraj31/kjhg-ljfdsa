@@ -1,0 +1,102 @@
+{
+  "entities": {
+    "StoreItem": {
+      "title": "StoreItem",
+      "description": "A handcrafted craft product or video item in the catalog",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique product ID"
+        },
+        "name": {
+          "type": "string",
+          "description": "Product name"
+        },
+        "category": {
+          "type": "string",
+          "description": "Category name"
+        },
+        "slug": {
+          "type": "string",
+          "description": "SEO URL slug"
+        },
+        "type": {
+          "type": "string",
+          "description": "product or video"
+        },
+        "description": {
+          "type": "string",
+          "description": "Product description"
+        },
+        "image_url": {
+          "type": "string",
+          "description": "Image URL or path"
+        },
+        "video_url": {
+          "type": "string",
+          "description": "Video URL"
+        },
+        "tags": {
+          "type": "string",
+          "description": "Search tags"
+        },
+        "published": {
+          "type": "boolean",
+          "description": "Whether item is published"
+        },
+        "availability": {
+          "type": "string",
+          "description": "in_stock, made_to_order, or out_of_stock"
+        },
+        "created_at": {
+          "type": "string",
+          "description": "Creation timestamp"
+        },
+        "updated_at": {
+          "type": "string",
+          "description": "Last updated timestamp"
+        }
+      },
+      "required": ["id", "name", "category", "slug"]
+    },
+    "CategoryItem": {
+      "title": "CategoryItem",
+      "description": "Product category",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Category ID"
+        },
+        "name": {
+          "type": "string",
+          "description": "Category name"
+        },
+        "display_order": {
+          "type": "number",
+          "description": "Display order"
+        },
+        "created_at": {
+          "type": "string",
+          "description": "Creation timestamp"
+        },
+        "updated_at": {
+          "type": "string",
+          "description": "Updated timestamp"
+        }
+      },
+      "required": ["id", "name"]
+    }
+  },
+  "firestore": {
+    "/store_items/{itemId}": {
+      "schema": "StoreItem",
+      "description": "All handcrafted catalog products"
+    },
+    "/categories/{categoryId}": {
+      "schema": "CategoryItem",
+      "description": "Product categories"
+    }
+  }
+}

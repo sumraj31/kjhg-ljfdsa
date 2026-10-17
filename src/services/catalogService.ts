@@ -33,68 +33,54 @@ export const baselineProducts: StoreItem[] = defaultProducts.map((p, idx) => {
   };
 });
 
-// Explicit tombstone set of deleted product IDs to prevent old browser caches or devices from ever displaying them
+// Explicit tombstone set of duplicate and deleted product IDs
 export const DELETED_PRODUCT_IDS = new Set<string>([
   'AK-073',
-  'AK-096',
-  'AK-097',
   'AK-148',
   'AK-149',
+  'AK-096',
+  'AK-96',
+  'AK-097',
+  'AK-97',
+  'ak-073',
+  'ak-148',
+  'ak-149',
+  'ak-096',
+  'ak-96',
+  'ak-097',
+  'ak-97',
 ]);
-
-if (typeof window !== 'undefined') {
-  try {
-    const rawDeleted = localStorage.getItem('anmolkala_deleted_ids');
-    if (rawDeleted) {
-      const parsed = JSON.parse(rawDeleted);
-      if (Array.isArray(parsed)) {
-        parsed.forEach((id: string) => DELETED_PRODUCT_IDS.add(id));
-      }
-    }
-  } catch (e) {}
-}
-
-// Client Storage Keys (Versioned to bust any stale mobile device caches)
-const LOCAL_STORAGE_CATALOG_KEY = 'anmolkala_active_catalog_v4';
-
-// In-memory catalog cache initialized with clean baselineProducts
-let memoryCatalog: StoreItem[] = baselineProducts.filter((p) => !DELETED_PRODUCT_IDS.has(p.id));
-
-if (typeof window !== 'undefined') {
-  try {
-    const raw = localStorage.getItem(LOCAL_STORAGE_CATALOG_KEY);
-    if (raw) {
-      const parsed = JSON.parse(raw);
-      if (Array.isArray(parsed) && parsed.length > 0) {
-        memoryCatalog = parsed.filter((p: any) => !DELETED_PRODUCT_IDS.has(p.id));
-      }
-    }
-  } catch (e) {}
-}
-
-function updateLocalCatalogCache(items: StoreItem[]) {
-  const clean = items.filter((p) => !DELETED_PRODUCT_IDS.has(p.id));
-  memoryCatalog = clean;
-  if (typeof window !== 'undefined') {
-    try {
-      localStorage.setItem(LOCAL_STORAGE_CATALOG_KEY, JSON.stringify(clean));
-    } catch (e) {}
-  }
-}
 
 // Clear legacy browser keys that don't belong to current version
 export function cleanLegacyStorage() {
   if (typeof window === 'undefined') return;
   try {
-    // Purge old unversioned or stale caches
+    // Purge ALL old unversioned or stale caches immediately
     localStorage.removeItem('anmolkala_active_catalog');
     localStorage.removeItem('anmolkala_active_catalog_v2');
     localStorage.removeItem('anmolkala_active_catalog_v3');
+    localStorage.removeItem('anmolkala_active_catalog_v4');
+    localStorage.removeItem('anmolkala_deleted_ids');
     localStorage.removeItem('anmolkala_store_items');
     localStorage.removeItem('anmolkala_admin_categories');
     localStorage.removeItem('anmolkala_admin_media');
     localStorage.removeItem('ak_store_items');
   } catch (e) {}
+}
+
+// Clean immediately on script evaluation
+cleanLegacyStorage();
+
+// Authoritative in-memory catalog cache initialized with clean baseline products (strictly excluding duplicates)
+let memoryCatalog: StoreItem[] = baselineProducts.filter(
+  (p) => !DELETED_PRODUCT_IDS.has(p.id) && !DELETED_PRODUCT_IDS.has(String(p.id).toUpperCase())
+);
+
+function updateLocalCatalogCache(items: StoreItem[]) {
+  const clean = items.filter(
+    (p) => !DELETED_PRODUCT_IDS.has(p.id) && !DELETED_PRODUCT_IDS.has(String(p.id).toUpperCase())
+  );
+  memoryCatalog = clean;
 }
 
 // Generate unique identifier for crafts & media
@@ -119,7 +105,7 @@ export async function getMediaBlobUrl(_id: string): Promise<string | null> {
 }
 
 // -------------------------------------------------------------
-// Real-Time Subscriptions (Clean no-ops for standalone catalog)
+// Real-Time Subscriptions (Live Server-Sent Events & Polling)
 // -------------------------------------------------------------
 export type RealtimeChangeCallback<T = any> = (payload: {
   eventType: 'INSERT' | 'UPDATE' | 'DELETE';
@@ -127,12 +113,82 @@ export type RealtimeChangeCallback<T = any> = (payload: {
   old: Partial<T>;
 }) => void;
 
-export function subscribeToProducts(_callback: RealtimeChangeCallback<StoreItem>): () => void {
-  return () => {};
+export function subscribeToProducts(callback: (items: StoreItem[]) => void): () => void {
+  let isSubscribed = true;
+
+  // 1. Server-Sent Events (SSE) for instantaneous live updates across every phone & computer
+  let eventSource: EventSource | null = null;
+  try {
+    if (typeof window !== 'undefined' && window.EventSource) {
+      eventSource = new EventSource('/api/realtime');
+      eventSource.onmessage = (event) => {
+        try {
+          const data = JSON.parse(event.data);
+          if (
+            data.type === 'PRODUCT_SAVED' ||
+            data.type === 'PRODUCT_DELETED' ||
+            data.type === 'CATALOG_MUTATED'
+          ) {
+            fetchProducts().then((fresh) => {
+              if (isSubscribed && fresh.length > 0) callback(fresh);
+            });
+          }
+        } catch (e) {}
+      };
+      eventSource.onerror = () => {
+        // SSE reconnects automatically
+      };
+    }
+  } catch (e) {}
+
+  // 2. High-frequency auto-polling (every 3 seconds) for 100% reliability
+  const pollInterval = setInterval(() => {
+    if (!isSubscribed) return;
+    fetchProducts().then((fresh) => {
+      if (isSubscribed && fresh.length > 0) {
+        callback(fresh);
+      }
+    });
+  }, 3000);
+
+  // 3. Local tab-to-tab BroadcastChannel and CustomEvent
+  const handleLocalMutated = () => {
+    fetchProducts().then((fresh) => {
+      if (isSubscribed && fresh.length > 0) callback(fresh);
+    });
+  };
+  catalogBroadcast?.addEventListener('message', handleLocalMutated);
+  if (typeof window !== 'undefined') {
+    window.addEventListener('anmolkala_catalog_mutated', handleLocalMutated);
+  }
+
+  return () => {
+    isSubscribed = false;
+    clearInterval(pollInterval);
+    eventSource?.close();
+    catalogBroadcast?.removeEventListener('message', handleLocalMutated);
+    if (typeof window !== 'undefined') {
+      window.removeEventListener('anmolkala_catalog_mutated', handleLocalMutated);
+    }
+  };
 }
 
-export function subscribeToCategories(_callback: RealtimeChangeCallback<CategoryItem>): () => void {
-  return () => {};
+export function subscribeToCategories(callback: (cats: CategoryItem[]) => void): () => void {
+  let isSubscribed = true;
+
+  const pollInterval = setInterval(() => {
+    if (!isSubscribed) return;
+    fetchCategories().then((cats) => {
+      if (isSubscribed && cats.length > 0) {
+        callback(cats);
+      }
+    });
+  }, 5000);
+
+  return () => {
+    isSubscribed = false;
+    clearInterval(pollInterval);
+  };
 }
 
 // -------------------------------------------------------------
@@ -257,11 +313,6 @@ export async function saveProduct(item: StoreItem): Promise<StoreItem> {
 export async function deleteProduct(productId: string): Promise<boolean> {
   // Always register in client tombstone registry
   DELETED_PRODUCT_IDS.add(productId);
-  if (typeof window !== 'undefined') {
-    try {
-      localStorage.setItem('anmolkala_deleted_ids', JSON.stringify(Array.from(DELETED_PRODUCT_IDS)));
-    } catch (e) {}
-  }
 
   try {
     const res = await fetch(`/api/products/${encodeURIComponent(productId)}`, {
@@ -280,6 +331,27 @@ export async function deleteProduct(productId: string): Promise<boolean> {
   updateLocalCatalogCache(next);
   notifyCatalogUpdated();
   return true;
+}
+
+export async function syncAllEverywhere(token?: string): Promise<{ success: boolean; message: string }> {
+  try {
+    const res = await fetch('/api/admin/sync-all', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: token ? `Bearer ${token}` : '',
+      },
+      body: JSON.stringify({ token }),
+    });
+    const data = await res.json();
+    if (res.ok) {
+      notifyCatalogUpdated();
+      return { success: true, message: data.message || 'Synced live everywhere across Website, Supabase, and GitHub!' };
+    }
+    return { success: false, message: data.error || 'Sync failed.' };
+  } catch (e: any) {
+    return { success: false, message: e.message || 'Sync failed.' };
+  }
 }
 
 // -------------------------------------------------------------

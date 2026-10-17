@@ -119,20 +119,11 @@ export const App: React.FC = () => {
     loadStorage<string[]>(STORAGE_KEYS.RECENT, [])
   );
 
-  // Products initialized with cached catalog or baseline handcrafted catalog (excluding deleted products)
+  // Authoritative catalog initialized with clean baseline products (strictly excluding duplicates)
   const [products, setProducts] = useState<StoreItem[]>(() => {
-    if (typeof window !== 'undefined') {
-      try {
-        const raw = localStorage.getItem('anmolkala_active_catalog_v4');
-        if (raw) {
-          const parsed = JSON.parse(raw);
-          if (Array.isArray(parsed) && parsed.length > 0) {
-            return parsed.filter((p: any) => !DELETED_PRODUCT_IDS.has(p.id));
-          }
-        }
-      } catch (e) {}
-    }
-    return baselineProducts.filter((p) => !DELETED_PRODUCT_IDS.has(p.id));
+    return baselineProducts.filter(
+      (p) => !DELETED_PRODUCT_IDS.has(p.id) && !DELETED_PRODUCT_IDS.has(String(p.id).toUpperCase())
+    );
   });
   const [dbCategories, setDbCategories] = useState<CategoryItem[]>([]);
   const [isCatalogLoading, setIsCatalogLoading] = useState<boolean>(false);
@@ -372,41 +363,21 @@ export const App: React.FC = () => {
     // 2. Initial fetch from catalog
     refreshProducts();
 
-    // 3. Bind real-time catalog subscriptions if available
-    const unsubProducts = subscribeToProducts((payload) => {
-      if (payload.eventType === 'INSERT') {
-        const item = payload.new;
-        setProducts((prev) => {
-          const exists = prev.some((p) => p.id === item.id);
-          if (exists) {
-            return prev.map((p) => (p.id === item.id ? item : p));
-          }
-          return [item, ...prev];
-        });
-      } else if (payload.eventType === 'UPDATE') {
-        const item = payload.new;
-        setProducts((prev) => prev.map((p) => (p.id === item.id ? item : p)));
-        setSelectedProduct((curr) =>
-          curr?.id === item.id
-            ? {
-                ...curr,
-                ...item,
-                image: item.image_url || '/logo.png',
-                slug: item.slug || curr.slug,
-              }
-            : curr
-        );
-      } else if (payload.eventType === 'DELETE') {
-        const deletedId = payload.old.id;
-        if (deletedId) {
-          setProducts((prev) => prev.filter((p) => p.id !== deletedId));
-          setSelectedProduct((curr) => (curr?.id === deletedId ? null : curr));
-        }
+    // 3. Bind real-time catalog subscriptions via SSE and broadcast
+    const unsubProducts = subscribeToProducts((freshData: any) => {
+      if (Array.isArray(freshData) && freshData.length > 0) {
+        setProducts(freshData);
+      } else {
+        refreshProducts();
       }
     });
 
-    const unsubCategories = subscribeToCategories(() => {
-      fetchCategories().then((cats) => setDbCategories(cats));
+    const unsubCategories = subscribeToCategories((cats: CategoryItem[]) => {
+      if (Array.isArray(cats) && cats.length > 0) {
+        setDbCategories(cats);
+      } else {
+        fetchCategories().then((fetched) => setDbCategories(fetched));
+      }
     });
 
     // 4. Handle reconnection, tab visibility, polling, and broadcast sync

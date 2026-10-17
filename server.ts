@@ -14,8 +14,41 @@ const { Pool } = pg;
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const PORT = parseInt(process.env.PORT || '3000', 10);
+// Port configuration: AI Studio dev environment expects port 3000
+const PORT = 3000;
 const isProd = process.env.NODE_ENV === 'production';
+
+// Explicit tombstone list of duplicate and deleted product IDs
+export const EXCLUDED_DUPLICATE_IDS = new Set<string>([
+  'AK-073',
+  'AK-148',
+  'AK-149',
+  'AK-096',
+  'AK-96',
+  'AK-097',
+  'AK-97',
+  'ak-073',
+  'ak-148',
+  'ak-149',
+  'ak-096',
+  'ak-96',
+  'ak-097',
+  'ak-97',
+]);
+
+// Real-Time Server-Sent Events (SSE) Client Pool
+const sseClients: Response[] = [];
+
+export function broadcastRealtimeUpdate(payload: any) {
+  const data = `data: ${JSON.stringify(payload)}\n\n`;
+  for (let i = sseClients.length - 1; i >= 0; i--) {
+    try {
+      sseClients[i].write(data);
+    } catch {
+      sseClients.splice(i, 1);
+    }
+  }
+}
 
 // Admin & Security Configuration
 const ADMIN_USERNAME = (process.env.ADMIN_USERNAME || 'anmolkala.in@gmail.com').trim().toLowerCase();
@@ -42,7 +75,7 @@ function persistAdminPassword(newPass: string) {
 }
 
 // -------------------------------------------------------------
-// Baseline Handcrafted Products Catalog (174 Preserved Items)
+// Baseline Handcrafted Products Catalog (Clean 169 Items)
 // -------------------------------------------------------------
 const catalogStorageFile = path.resolve(__dirname, 'src/data/catalog_storage.json');
 
@@ -71,7 +104,9 @@ function getBaselineProducts(): any[] {
     console.warn('Could not read initialData.json:', e);
   }
 
-  return rawProducts.map((p: any, idx: number) => {
+  return rawProducts
+    .filter((p: any) => !EXCLUDED_DUPLICATE_IDS.has(String(p.id).toUpperCase()) && !EXCLUDED_DUPLICATE_IDS.has(String(p.id)))
+    .map((p: any, idx: number) => {
     let video_url = p.video_url || '';
     if (!video_url) {
       if (p.id === 'AK-001') {
@@ -108,10 +143,15 @@ function initializeCatalogStorage(): CatalogData {
       const raw = fs.readFileSync(catalogStorageFile, 'utf-8');
       const parsed = JSON.parse(raw);
       if (Array.isArray(parsed.products) && parsed.products.length > 0) {
+        const cleanProds = parsed.products.filter(
+          (p: any) => !EXCLUDED_DUPLICATE_IDS.has(String(p.id).toUpperCase()) && !EXCLUDED_DUPLICATE_IDS.has(String(p.id))
+        );
         return {
-          products: parsed.products,
+          products: cleanProds,
           categories: Array.isArray(parsed.categories) ? parsed.categories : [],
-          media: Array.isArray(parsed.media) ? parsed.media : [],
+          media: Array.isArray(parsed.media)
+            ? parsed.media.filter((m: any) => !EXCLUDED_DUPLICATE_IDS.has(String(m.product_id).toUpperCase()))
+            : [],
         };
       }
     }
@@ -312,6 +352,94 @@ async function initDatabase() {
   // Set primary reading pool
   pgPool = cloudSqlPool || supabasePool || null;
   isDbConnected = Boolean(pgPool);
+
+  // Auto-create relational tables and seed if necessary
+  if (isDbConnected && pgPool) {
+    try {
+      await pgPool.query(`
+        CREATE TABLE IF NOT EXISTS store_items (
+          id TEXT PRIMARY KEY,
+          type TEXT DEFAULT 'product',
+          name TEXT NOT NULL,
+          category TEXT NOT NULL,
+          slug TEXT NOT NULL,
+          description TEXT DEFAULT '',
+          image_url TEXT,
+          video_url TEXT,
+          tags TEXT DEFAULT '',
+          published BOOLEAN DEFAULT true,
+          availability TEXT DEFAULT 'in_stock',
+          created_at TIMESTAMPTZ DEFAULT NOW(),
+          updated_at TIMESTAMPTZ DEFAULT NOW()
+        );
+        CREATE TABLE IF NOT EXISTS categories (
+          id TEXT PRIMARY KEY,
+          name TEXT NOT NULL UNIQUE,
+          display_order INTEGER DEFAULT 0,
+          created_at TIMESTAMPTZ DEFAULT NOW(),
+          updated_at TIMESTAMPTZ DEFAULT NOW()
+        );
+        CREATE TABLE IF NOT EXISTS product_media (
+          id TEXT PRIMARY KEY,
+          product_id TEXT,
+          storage_path TEXT NOT NULL,
+          media_type TEXT DEFAULT 'image',
+          file_name TEXT,
+          file_size TEXT DEFAULT '0',
+          mime_type TEXT,
+          display_order INTEGER DEFAULT 0,
+          created_at TIMESTAMPTZ DEFAULT NOW()
+        );
+      `);
+
+      // Permanently remove requested duplicate products from database
+      await pgPool.query(`
+        DELETE FROM store_items WHERE id IN ('AK-073', 'AK-148', 'AK-149', 'AK-096', 'AK-96', 'AK-097', 'AK-97');
+        DELETE FROM product_media WHERE product_id IN ('AK-073', 'AK-148', 'AK-149', 'AK-096', 'AK-96', 'AK-097', 'AK-97');
+      `);
+
+      // Check if store_items has data
+      const checkRes = await pgPool.query('SELECT COUNT(*) FROM store_items;');
+      const count = parseInt(checkRes.rows[0].count, 10);
+      if (count === 0 && catalogData.products.length > 0) {
+        console.log(`[Database] Seeding ${catalogData.products.length} products to Supabase/PostgreSQL...`);
+        for (const p of catalogData.products) {
+          if (!EXCLUDED_DUPLICATE_IDS.has(p.id)) {
+            await pgPool.query(
+              `INSERT INTO store_items (id, type, name, category, slug, description, image_url, video_url, tags, published, availability, created_at, updated_at)
+               VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
+               ON CONFLICT (id) DO NOTHING;`,
+              [
+                p.id,
+                p.type || 'product',
+                p.name,
+                p.category,
+                p.slug,
+                p.description || '',
+                p.image_url || '/logo.png',
+                p.video_url || '',
+                p.tags || '',
+                p.published !== false,
+                p.availability || 'in_stock',
+                p.created_at || new Date().toISOString(),
+                p.updated_at || new Date().toISOString(),
+              ]
+            );
+          }
+        }
+      } else if (count > 0) {
+        // Load authoritative items from database
+        const rows = await pgPool.query('SELECT * FROM store_items ORDER BY created_at DESC;');
+        const cleanRows = rows.rows.filter((r: any) => !EXCLUDED_DUPLICATE_IDS.has(r.id));
+        if (cleanRows.length > 0) {
+          catalogData.products = cleanRows;
+        }
+      }
+    } catch (e: any) {
+      console.warn('[Database Setup / Seed Notice]:', e.message);
+    }
+  }
+
   dbInfo = {
     provider: cloudSqlPool && supabasePool
       ? 'Google Cloud SQL & Supabase (Dual Real-Time Sync Active)'
@@ -473,10 +601,36 @@ app.get('/sitemap.xml', async (_req: Request, res: Response) => {
 // API ROUTES — Real-Time Database with Automatic Local Fallback
 // -------------------------------------------------------------
 
+// Real-Time Server-Sent Events (SSE) Stream Endpoint for Instant Everywhere Updates
+app.get('/api/realtime', (req: Request, res: Response) => {
+  res.writeHead(200, {
+    'Content-Type': 'text/event-stream',
+    'Cache-Control': 'no-cache, no-transform',
+    'Connection': 'keep-alive',
+    'Access-Control-Allow-Origin': '*',
+  });
+  res.write(`data: ${JSON.stringify({ type: 'CONNECTED', timestamp: Date.now() })}\n\n`);
+  sseClients.push(res);
+
+  const heartbeat = setInterval(() => {
+    try {
+      res.write(': heartbeat\n\n');
+    } catch {
+      clearInterval(heartbeat);
+    }
+  }, 10000);
+
+  req.on('close', () => {
+    clearInterval(heartbeat);
+    const idx = sseClients.indexOf(res);
+    if (idx !== -1) sseClients.splice(idx, 1);
+  });
+});
+
 // System Status Route
 app.get('/api/status', async (_req: Request, res: Response) => {
-  let storeItemCount = catalogData.products.length;
-  let publishedCount = catalogData.products.filter((i) => i.published !== false).length;
+  let storeItemCount = catalogData.products.filter((i) => !EXCLUDED_DUPLICATE_IDS.has(i.id)).length;
+  let publishedCount = catalogData.products.filter((i) => i.published !== false && !EXCLUDED_DUPLICATE_IDS.has(i.id)).length;
   let catCount = catalogData.categories.length;
 
   if (isDbConnected && pgPool) {
@@ -500,7 +654,7 @@ app.get('/api/status', async (_req: Request, res: Response) => {
       categories: catCount,
       product_media: catalogData.media.length,
       total_photos: catalogData.media.filter((m) => m.media_type === 'image').length || storeItemCount,
-      products_with_videos: catalogData.products.filter((i) => Boolean(i.video_url)).length,
+      products_with_videos: catalogData.products.filter((i) => Boolean(i.video_url) && !EXCLUDED_DUPLICATE_IDS.has(i.id)).length,
     },
     timestamp: new Date().toISOString(),
   });
@@ -530,14 +684,15 @@ app.get('/api/products', async (req: Request, res: Response) => {
       query += ' ORDER BY created_at DESC;';
 
       const dbRes = await pgPool.query(query, values);
-      return res.json(dbRes.rows);
+      const cleanRows = dbRes.rows.filter((r: any) => !EXCLUDED_DUPLICATE_IDS.has(r.id) && !EXCLUDED_DUPLICATE_IDS.has(String(r.id).toUpperCase()));
+      return res.json(cleanRows);
     } catch (e) {
       console.warn('[Database Query Error, falling back to local]:', e);
     }
   }
 
-  // Fallback to local catalog
-  let items = [...catalogData.products];
+  // Fallback to local catalog (always strictly excluding duplicate IDs)
+  let items = catalogData.products.filter((i) => !EXCLUDED_DUPLICATE_IDS.has(i.id) && !EXCLUDED_DUPLICATE_IDS.has(String(i.id).toUpperCase()));
   if (category && category !== 'All' && category !== 'all') {
     items = items.filter((i) => i.category.toLowerCase() === String(category).toLowerCase());
   }
@@ -621,6 +776,15 @@ app.post('/api/products', async (req: Request, res: Response) => {
   }
 
   persistCatalogStorage();
+
+  // Instant real-time broadcast to all connected phones and laptops worldwide
+  broadcastRealtimeUpdate({
+    type: 'PRODUCT_SAVED',
+    action: 'save',
+    item: cleanItem,
+    timestamp: Date.now(),
+  });
+
   return res.json(cleanItem);
 });
 
@@ -644,6 +808,15 @@ app.delete('/api/products/:id', async (req: Request, res: Response) => {
   if (catalogData.products.length !== initialLen) {
     persistCatalogStorage();
   }
+
+  // Instant real-time broadcast of deletion to all devices
+  broadcastRealtimeUpdate({
+    type: 'PRODUCT_DELETED',
+    action: 'delete',
+    id,
+    timestamp: Date.now(),
+  });
+
   return res.json({ success: true, id });
 });
 
@@ -720,6 +893,7 @@ app.post('/api/categories', async (req: Request, res: Response) => {
   }
 
   persistCatalogStorage();
+  broadcastRealtimeUpdate({ type: 'CATEGORIES_UPDATED', timestamp: Date.now() });
   return res.json(categoryItem);
 });
 
@@ -746,6 +920,7 @@ app.delete('/api/categories/:id', async (req: Request, res: Response) => {
 
   catalogData.categories = catalogData.categories.filter((c) => c.id !== id);
   persistCatalogStorage();
+  broadcastRealtimeUpdate({ type: 'CATEGORIES_UPDATED', timestamp: Date.now() });
   return res.json({ success: true });
 });
 
@@ -885,6 +1060,13 @@ app.post('/api/admin/sync-all', async (req: Request, res: Response) => {
     // 3. Persist all JSON and JS files
     persistCatalogStorage();
 
+    // Broadcast instant sync event to all connected devices worldwide
+    broadcastRealtimeUpdate({
+      type: 'CATALOG_MUTATED',
+      timestamp: Date.now(),
+      message: 'Full sync executed',
+    });
+
     return res.json({
       success: true,
       message: 'All changes live immediately across Website, Cloud SQL, Supabase, and GitHub repository files.',
@@ -996,17 +1178,49 @@ async function startServer() {
       appType: 'spa',
     });
     app.use(vite.middlewares);
+
+    // Single-Page Application (SPA) HTML fallback for client routes
+    app.use(async (req: Request, res: Response, next: NextFunction) => {
+      if (
+        req.url.startsWith('/api') ||
+        req.url.startsWith('/products.json') ||
+        req.url.startsWith('/products/') ||
+        req.url.startsWith('/assets/') ||
+        req.url.startsWith('/@') ||
+        req.url.startsWith('/src/')
+      ) {
+        return next();
+      }
+      try {
+        let template = fs.readFileSync(path.resolve(__dirname, 'index.html'), 'utf-8');
+        template = await vite.transformIndexHtml(req.originalUrl, template);
+        res.status(200).set({ 'Content-Type': 'text/html' }).end(template);
+      } catch (e) {
+        vite.ssrFixStacktrace(e as Error);
+        next(e);
+      }
+    });
   } else {
     const distPath = path.resolve(__dirname, 'dist');
     app.use(express.static(distPath));
-    app.get('*', (_req: Request, res: Response) => {
+    app.use((_req: Request, res: Response) => {
       res.sendFile(path.join(distPath, 'index.html'));
     });
   }
 
+  // Always bind on AI Studio Port 3000
   app.listen(PORT, '0.0.0.0', () => {
     console.log(`[Anmol Kala Server] Running on http://0.0.0.0:${PORT}`);
   });
+
+  const envPort = process.env.PORT ? parseInt(process.env.PORT, 10) : 0;
+  if (envPort && envPort !== PORT) {
+    try {
+      app.listen(envPort, '0.0.0.0', () => {
+        console.log(`[Anmol Kala Server] Also running on container port http://0.0.0.0:${envPort}`);
+      });
+    } catch (e) {}
+  }
 }
 
 if (!process.env.VERCEL) {

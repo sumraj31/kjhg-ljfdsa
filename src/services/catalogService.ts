@@ -1,7 +1,5 @@
 import { StoreItem, CategoryItem, MediaItem, ActivityLog, AdminSession, ProductAvailability } from '../types';
 import { defaultProducts } from '../data/products';
-import { db } from '../firebase';
-import { doc, setDoc, deleteDoc } from 'firebase/firestore';
 
 // Preserved handcrafted catalog of all original products
 export const baselineProducts: StoreItem[] = defaultProducts.map((p, idx) => {
@@ -370,13 +368,6 @@ export async function saveProduct(item: StoreItem): Promise<StoreItem> {
   DELETED_PRODUCT_IDS.delete(cleanItem.id.toLowerCase());
   persistClientDeletedIds();
 
-  // Multi-Cloud Dual Write to Firestore
-  try {
-    if (db) {
-      setDoc(doc(db, 'store_items', cleanItem.id), cleanItem, { merge: true }).catch(() => {});
-    }
-  } catch (e) {}
-
   const res = await fetch('/api/products', {
     method: 'POST',
     headers: getAuthHeaders(),
@@ -410,14 +401,6 @@ export async function deleteProduct(productId: string): Promise<boolean> {
   const next = memoryCatalog.filter((p) => p.id !== productId && p.id.toUpperCase() !== productId.toUpperCase());
   updateLocalCatalogCache(next);
   notifyCatalogUpdated();
-
-  // Multi-Cloud Dual Delete from Firestore
-  try {
-    if (db) {
-      deleteDoc(doc(db, 'store_items', productId)).catch(() => {});
-      deleteDoc(doc(db, 'store_items', productId.toUpperCase())).catch(() => {});
-    }
-  } catch (e) {}
 
   // 3. Issue authoritative server delete request
   const res = await fetch(`/api/products/${encodeURIComponent(productId)}`, {
@@ -491,12 +474,6 @@ export async function saveCategory(cat: CategoryItem & { old_name?: string }): P
     created_at: cat.created_at || new Date().toISOString(),
   };
 
-  try {
-    if (db) {
-      setDoc(doc(db, 'categories', categoryItem.id), categoryItem, { merge: true }).catch(() => {});
-    }
-  } catch (e) {}
-
   const res = await fetch('/api/categories', {
     method: 'POST',
     headers: getAuthHeaders(),
@@ -529,12 +506,6 @@ export async function ensureCategoryExists(categoryName: string): Promise<void> 
 }
 
 export async function deleteCategory(id: string): Promise<{ success: boolean; error?: string }> {
-  try {
-    if (db) {
-      deleteDoc(doc(db, 'categories', id)).catch(() => {});
-    }
-  } catch (e) {}
-
   const res = await fetch(`/api/categories/${encodeURIComponent(id)}`, {
     method: 'DELETE',
     headers: getAuthHeaders(),

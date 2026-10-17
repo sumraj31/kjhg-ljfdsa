@@ -325,10 +325,10 @@ function persistCatalogStorage() {
 }
 
 // -------------------------------------------------------------
-// Real-Time Multi-Database Layer (Cloud SQL + Supabase)
+// Authoritative Database Layer (Supabase PostgreSQL / Cloud SQL)
 // -------------------------------------------------------------
-let cloudSqlPool: pg.Pool | null = null;
 let supabasePool: pg.Pool | null = null;
+let cloudSqlPool: pg.Pool | null = null;
 let pgPool: pg.Pool | null = null;
 let isDbConnected = false;
 let dbInfo = {
@@ -339,30 +339,49 @@ let dbInfo = {
 
 let dbInitPromise: Promise<void> | null = null;
 
-async function executeDualWrite(sql: string, params: any[]) {
-  const tasks: Promise<any>[] = [];
-  if (cloudSqlPool) {
-    tasks.push(
-      cloudSqlPool.query(sql, params).catch((err) => {
-        console.warn('[Cloud SQL Write Error]:', err?.message);
-      })
-    );
-  }
+async function executeDbWrite(sql: string, params: any[]) {
   if (supabasePool) {
-    tasks.push(
-      supabasePool.query(sql, params).catch((err) => {
-        console.warn('[Supabase Write Error]:', err?.message);
-      })
-    );
-  }
-  if (tasks.length > 0) {
-    await Promise.allSettled(tasks);
+    await supabasePool.query(sql, params);
+  } else if (cloudSqlPool) {
+    await cloudSqlPool.query(sql, params);
   }
 }
 
 async function initDatabase() {
-  // 1. Initialize Google Cloud SQL Developer Edition
-  if (process.env.SQL_HOST) {
+  // 1. Initialize Supabase / external PostgreSQL (DATABASE_URL) — Single Source of Truth
+  const rawDatabaseUrl =
+    process.env.DATABASE_URL ||
+    process.env.POSTGRES_URL ||
+    process.env.POSTGRES_PRISMA_URL ||
+    process.env.SUPABASE_DB_URL ||
+    '';
+
+  if (rawDatabaseUrl.trim()) {
+    try {
+      const isLocalhost = rawDatabaseUrl.includes('localhost') || rawDatabaseUrl.includes('127.0.0.1');
+      supabasePool = new Pool({
+        connectionString: rawDatabaseUrl,
+        ssl: isLocalhost ? false : { rejectUnauthorized: false },
+        max: 10,
+        idleTimeoutMillis: 30000,
+        connectionTimeoutMillis: 10000,
+      });
+
+      supabasePool.on('error', (err) => {
+        console.warn('[Supabase Pool Warning]:', err.message);
+      });
+
+      const client = await supabasePool.connect();
+      console.log('[Database] Real-time connection established via Supabase PostgreSQL!');
+      client.release();
+    } catch (err: any) {
+      console.warn('[Supabase Connection Failed]:', err?.message);
+      supabasePool = null;
+    }
+  }
+
+  // 2. Optional Fallback: Google Cloud SQL
+  if (!supabasePool && process.env.SQL_HOST) {
     try {
       console.log('[Database] Connecting to Google Cloud SQL at', process.env.SQL_HOST);
       cloudSqlPool = new Pool({
@@ -387,42 +406,11 @@ async function initDatabase() {
     }
   }
 
-  // 2. Initialize Supabase / external PostgreSQL (DATABASE_URL)
-  const rawDatabaseUrl =
-    process.env.DATABASE_URL ||
-    process.env.POSTGRES_URL ||
-    process.env.POSTGRES_PRISMA_URL ||
-    process.env.SUPABASE_DB_URL ||
-    '';
-
-  if (rawDatabaseUrl.trim()) {
-    try {
-      const isLocalhost = rawDatabaseUrl.includes('localhost') || rawDatabaseUrl.includes('127.0.0.1');
-      supabasePool = new Pool({
-        connectionString: rawDatabaseUrl,
-        ssl: isLocalhost ? false : { rejectUnauthorized: false },
-        max: 5,
-        connectionTimeoutMillis: 3000,
-      });
-
-      supabasePool.on('error', (err) => {
-        console.warn('[Supabase Pool Warning]:', err.message);
-      });
-
-      const client = await supabasePool.connect();
-      console.log('[Database] Real-time connection established via Supabase PostgreSQL!');
-      client.release();
-    } catch (err: any) {
-      console.warn('[Supabase Connection Failed]:', err?.message);
-      supabasePool = null;
-    }
-  }
-
-  // Set primary reading pool
-  pgPool = cloudSqlPool || supabasePool || null;
+  // Supabase PostgreSQL is preferred as single source of truth
+  pgPool = supabasePool || cloudSqlPool || null;
   isDbConnected = Boolean(pgPool);
 
-  // Auto-create relational tables and seed if necessary
+  // Auto-create relational tables and sync with authoritative state
   if (isDbConnected && pgPool) {
     try {
       await pgPool.query(`
@@ -438,6 +426,7 @@ async function initDatabase() {
           tags TEXT DEFAULT '',
           published BOOLEAN DEFAULT true,
           availability TEXT DEFAULT 'in_stock',
+          is_deleted BOOLEAN DEFAULT false,
           created_at TIMESTAMPTZ DEFAULT NOW(),
           updated_at TIMESTAMPTZ DEFAULT NOW()
         );
@@ -459,22 +448,78 @@ async function initDatabase() {
           display_order INTEGER DEFAULT 0,
           created_at TIMESTAMPTZ DEFAULT NOW()
         );
-      `);
-
-      // Permanently remove requested duplicate products from database
-      await pgPool.query(`
-        DELETE FROM store_items WHERE id IN ('AK-073', 'AK-148', 'AK-149', 'AK-096', 'AK-96', 'AK-097', 'AK-97');
-        DELETE FROM product_media WHERE product_id IN ('AK-073', 'AK-148', 'AK-149', 'AK-096', 'AK-96', 'AK-097', 'AK-97');
-      `);
-
-      // Check if store_items has data
-      const checkRes = await pgPool.query('SELECT COUNT(*) FROM store_items;');
-      const count = parseInt(checkRes.rows[0].count, 10);
-      if (count === 0 && catalogData.products.length > 0) {
-        console.log(`[Database] Fast batch-seeding ${catalogData.products.length} products to database...`);
-        const validProds = catalogData.products.filter(
-          (p) => !isDeletedProduct(p.id)
+        CREATE TABLE IF NOT EXISTS deleted_product_ids (
+          id TEXT PRIMARY KEY,
+          deleted_at TIMESTAMPTZ DEFAULT NOW()
         );
+        CREATE INDEX IF NOT EXISTS idx_store_items_category ON store_items(category);
+        CREATE INDEX IF NOT EXISTS idx_store_items_published ON store_items(published);
+        CREATE INDEX IF NOT EXISTS idx_store_items_created_at ON store_items(created_at);
+        CREATE INDEX IF NOT EXISTS idx_product_media_product_id ON product_media(product_id);
+      `);
+
+      // Ensure is_deleted column exists on store_items
+      await pgPool.query(`
+        DO $$
+        BEGIN
+          IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='store_items' AND column_name='is_deleted') THEN
+            ALTER TABLE store_items ADD COLUMN is_deleted BOOLEAN DEFAULT false;
+          END IF;
+        END $$;
+      `);
+
+      // 1. Sync persistent deleted IDs from database into in-memory tombstones
+      const delRes = await pgPool.query('SELECT id FROM deleted_product_ids;');
+      delRes.rows.forEach((r: any) => {
+        if (r.id) {
+          deletedProductIds.add(String(r.id).trim());
+          deletedProductIds.add(String(r.id).trim().toUpperCase());
+          deletedProductIds.add(String(r.id).trim().toLowerCase());
+        }
+      });
+
+      // 2. Permanently record duplicate items into deleted_product_ids
+      for (const dupId of EXCLUDED_DUPLICATE_IDS) {
+        await pgPool.query('INSERT INTO deleted_product_ids (id) VALUES ($1) ON CONFLICT (id) DO NOTHING;', [dupId.toUpperCase()]);
+      }
+      await pgPool.query(`
+        DELETE FROM store_items WHERE id IN ('AK-073', 'AK-148', 'AK-149', 'AK-096', 'AK-96', 'AK-097', 'AK-97', 'ak-073', 'ak-148', 'ak-149', 'ak-096', 'ak-96', 'ak-097', 'ak-97');
+        DELETE FROM product_media WHERE product_id IN ('AK-073', 'AK-148', 'AK-149', 'AK-096', 'AK-96', 'AK-097', 'AK-97', 'ak-073', 'ak-148', 'ak-149', 'ak-096', 'ak-96', 'ak-097', 'ak-97');
+      `);
+
+      // 3. Inspect store_items count in PostgreSQL
+      const checkRes = await pgPool.query('SELECT COUNT(*) FROM store_items WHERE is_deleted IS NOT true;');
+      const count = parseInt(checkRes.rows[0].count, 10);
+
+      if (count > 0) {
+        // Authoritative single source of truth: PostgreSQL Database
+        const rows = await pgPool.query('SELECT * FROM store_items WHERE is_deleted IS NOT true ORDER BY created_at DESC;');
+        const cleanRows = rows.rows.filter((r: any) => !isDeletedProduct(r.id));
+        if (cleanRows.length > 0) {
+          catalogData.products = cleanRows;
+          console.log(`[Database] Loaded ${cleanRows.length} authoritative products directly from PostgreSQL.`);
+        }
+
+        // Sync categories from database
+        const catRes = await pgPool.query('SELECT * FROM categories ORDER BY display_order ASC, name ASC;');
+        if (catRes.rows.length > 0) {
+          catalogData.categories = catRes.rows;
+        } else {
+          // Derive categories from existing products and seed categories table
+          const uniqueCats = Array.from(new Set(cleanRows.map((p) => p.category.trim()))).filter(Boolean).sort();
+          for (let i = 0; i < uniqueCats.length; i++) {
+            await pgPool.query(
+              'INSERT INTO categories (id, name, display_order) VALUES ($1, $2, $3) ON CONFLICT (name) DO NOTHING;',
+              [`cat-${i + 1}`, uniqueCats[i], i]
+            );
+          }
+          const seededCats = await pgPool.query('SELECT * FROM categories ORDER BY display_order ASC, name ASC;');
+          catalogData.categories = seededCats.rows;
+        }
+      } else if (count === 0 && catalogData.products.length > 0) {
+        // Initial empty database setup only: batch-seed baseline products
+        console.log(`[Database] Initializing empty database with ${catalogData.products.length} catalog products...`);
+        const validProds = catalogData.products.filter((p) => !isDeletedProduct(p.id));
         const BATCH_SIZE = 50;
         for (let i = 0; i < validProds.length; i += BATCH_SIZE) {
           const chunk = validProds.slice(i, i + BATCH_SIZE);
@@ -482,7 +527,7 @@ async function initDatabase() {
           const rowsSql: string[] = [];
           let paramIdx = 1;
           for (const p of chunk) {
-            rowsSql.push(`($${paramIdx}, $${paramIdx + 1}, $${paramIdx + 2}, $${paramIdx + 3}, $${paramIdx + 4}, $${paramIdx + 5}, $${paramIdx + 6}, $${paramIdx + 7}, $${paramIdx + 8}, $${paramIdx + 9}, $${paramIdx + 10}, $${paramIdx + 11}, $${paramIdx + 12})`);
+            rowsSql.push(`($${paramIdx}, $${paramIdx + 1}, $${paramIdx + 2}, $${paramIdx + 3}, $${paramIdx + 4}, $${paramIdx + 5}, $${paramIdx + 6}, $${paramIdx + 7}, $${paramIdx + 8}, $${paramIdx + 9}, $${paramIdx + 10}, false, $${paramIdx + 11}, $${paramIdx + 12})`);
             values.push(
               p.id,
               p.type || 'product',
@@ -502,19 +547,22 @@ async function initDatabase() {
           }
           if (rowsSql.length > 0) {
             await pgPool.query(
-              `INSERT INTO store_items (id, type, name, category, slug, description, image_url, video_url, tags, published, availability, created_at, updated_at)
+              `INSERT INTO store_items (id, type, name, category, slug, description, image_url, video_url, tags, published, availability, is_deleted, created_at, updated_at)
                VALUES ${rowsSql.join(', ')}
                ON CONFLICT (id) DO NOTHING;`,
               values
             );
           }
         }
-      } else if (count > 0) {
-        // Load authoritative items from database
-        const rows = await pgPool.query('SELECT * FROM store_items ORDER BY created_at DESC;');
-        const cleanRows = rows.rows.filter((r: any) => !isDeletedProduct(r.id));
-        if (cleanRows.length > 0) {
-          catalogData.products = cleanRows;
+
+        // Seed initial categories
+        if (catalogData.categories.length > 0) {
+          for (const c of catalogData.categories) {
+            await pgPool.query(
+              'INSERT INTO categories (id, name, display_order, created_at, updated_at) VALUES ($1, $2, $3, $4, $5) ON CONFLICT (name) DO NOTHING;',
+              [c.id, c.name, c.display_order, c.created_at || new Date().toISOString(), new Date().toISOString()]
+            );
+          }
         }
       }
     } catch (e: any) {
@@ -523,12 +571,10 @@ async function initDatabase() {
   }
 
   dbInfo = {
-    provider: cloudSqlPool && supabasePool
-      ? 'Google Cloud SQL & Supabase (Dual Real-Time Sync Active)'
+    provider: supabasePool
+      ? 'Supabase PostgreSQL (Connected via DATABASE_URL)'
       : cloudSqlPool
       ? 'Google Cloud SQL (Connected)'
-      : supabasePool
-      ? 'Supabase PostgreSQL (Connected via DATABASE_URL)'
       : 'Local Storage (Operating smoothly with persistent local catalogue)',
     status: isDbConnected ? 'connected' : 'local',
     error: null,
@@ -557,7 +603,8 @@ function generateToken(username: string): string {
     .createHmac('sha256', SESSION_SECRET)
     .update(`${username}:${timestamp}`)
     .digest('hex');
-  return `adm_${timestamp}_${signature}`;
+  const userB64 = Buffer.from(username).toString('base64url');
+  return `adm_${timestamp}_${userB64}_${signature}`;
 }
 
 function verifyToken(token: string): { valid: boolean; email?: string } {
@@ -572,7 +619,44 @@ function verifyToken(token: string): { valid: boolean; email?: string } {
     return { valid: false };
   }
 
-  return { valid: true, email: ADMIN_USERNAME };
+  // 4-part token: adm_timestamp_userB64_signature
+  if (parts.length >= 4) {
+    let username = ADMIN_USERNAME;
+    try {
+      username = Buffer.from(parts[2], 'base64url').toString('utf-8');
+    } catch {
+      return { valid: false };
+    }
+    const signature = parts[3];
+    const expectedSig = crypto
+      .createHmac('sha256', SESSION_SECRET)
+      .update(`${username}:${timestamp}`)
+      .digest('hex');
+
+    if (
+      signature.length === expectedSig.length &&
+      crypto.timingSafeEqual(Buffer.from(signature), Buffer.from(expectedSig))
+    ) {
+      return { valid: true, email: username };
+    }
+    return { valid: false };
+  }
+
+  // 3-part token backward compatibility: adm_timestamp_signature
+  const signature = parts[2];
+  const expectedSig = crypto
+    .createHmac('sha256', SESSION_SECRET)
+    .update(`${ADMIN_USERNAME}:${timestamp}`)
+    .digest('hex');
+
+  if (
+    signature.length === expectedSig.length &&
+    crypto.timingSafeEqual(Buffer.from(signature), Buffer.from(expectedSig))
+  ) {
+    return { valid: true, email: ADMIN_USERNAME };
+  }
+
+  return { valid: false };
 }
 
 export function requireAdminAuth(req: Request, res: Response, next: NextFunction) {
@@ -629,8 +713,17 @@ if (fs.existsSync(path.resolve(__dirname, 'dist/products'))) {
 }
 
 // API Health and Status root endpoint
-app.get(['/api', '/api/index'], (_req: Request, res: Response) => {
-  return res.json({ status: 'ok', service: 'AnmolKala API', timestamp: new Date().toISOString() });
+app.get(['/api', '/api/index', '/api/health'], (_req: Request, res: Response) => {
+  return res.json({
+    status: 'ok',
+    service: 'AnmolKala API',
+    uptime: process.uptime(),
+    database: {
+      connected: isDbConnected,
+      provider: dbInfo.provider,
+    },
+    timestamp: new Date().toISOString(),
+  });
 });
 
 // -------------------------------------------------------------
@@ -783,7 +876,7 @@ app.get('/api/products', async (req: Request, res: Response) => {
   if (isDbConnected && pgPool) {
     try {
       let query = 'SELECT * FROM store_items';
-      const conditions: string[] = [];
+      const conditions: string[] = ['(is_deleted IS NULL OR is_deleted = false)'];
       const values: any[] = [];
 
       if (category && category !== 'All' && category !== 'all') {
@@ -871,12 +964,12 @@ app.post('/api/products', requireAdminAuth, async (req: Request, res: Response) 
     updated_at: now,
   };
 
-  // Sync to Cloud SQL and Supabase simultaneously
+  // Sync to PostgreSQL (Single Source of Truth)
   if (isDbConnected) {
     try {
-      await executeDualWrite(
-        `INSERT INTO store_items (id, type, name, category, slug, description, image_url, video_url, tags, published, availability, created_at, updated_at)
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
+      await executeDbWrite(
+        `INSERT INTO store_items (id, type, name, category, slug, description, image_url, video_url, tags, published, availability, is_deleted, created_at, updated_at)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, false, $12, $13)
          ON CONFLICT (id) DO UPDATE SET
            name = EXCLUDED.name,
            category = EXCLUDED.category,
@@ -887,6 +980,7 @@ app.post('/api/products', requireAdminAuth, async (req: Request, res: Response) 
            tags = EXCLUDED.tags,
            published = EXCLUDED.published,
            availability = EXCLUDED.availability,
+           is_deleted = false,
            updated_at = EXCLUDED.updated_at;`,
         [
           cleanItem.id,
@@ -904,8 +998,11 @@ app.post('/api/products', requireAdminAuth, async (req: Request, res: Response) 
           cleanItem.updated_at,
         ]
       );
-    } catch (e) {
-      console.warn('[DB Error on Save Product]:', e);
+      // Remove from deleted_product_ids in PostgreSQL if restored
+      await executeDbWrite('DELETE FROM deleted_product_ids WHERE id = $1 OR UPPER(id) = UPPER($1);', [cleanItem.id]);
+    } catch (e: any) {
+      console.error('[DB Error on Save Product]:', e);
+      return res.status(500).json({ error: `Database error saving product: ${e.message}` });
     }
   }
 
@@ -919,7 +1016,7 @@ app.post('/api/products', requireAdminAuth, async (req: Request, res: Response) 
 
   persistCatalogStorage();
 
-  // Instant real-time broadcast to all connected phones and laptops worldwide
+  // Instant real-time broadcast to all connected devices worldwide
   broadcastRealtimeUpdate({
     type: 'PRODUCT_SAVED',
     action: 'save',
@@ -937,16 +1034,18 @@ app.delete('/api/products/:id', requireAdminAuth, async (req: Request, res: Resp
     return res.status(400).json({ error: 'Product ID is required.' });
   }
 
-  // 1. Permanently record in persistent tombstones
+  // 1. Permanently record in persistent in-memory and disk tombstones
   recordDeletedProductId(id);
 
-  // 2. Delete from relational databases
+  // 2. Delete from PostgreSQL and record in deleted_product_ids table
   if (isDbConnected) {
     try {
-      await executeDualWrite('DELETE FROM store_items WHERE id = $1;', [id]);
-      await executeDualWrite('DELETE FROM product_media WHERE product_id = $1;', [id]);
-    } catch (e) {
-      console.warn('[DB Error on Delete Product]:', e);
+      await executeDbWrite('INSERT INTO deleted_product_ids (id, deleted_at) VALUES ($1, NOW()) ON CONFLICT (id) DO NOTHING;', [id]);
+      await executeDbWrite('DELETE FROM store_items WHERE id = $1 OR UPPER(id) = UPPER($1);', [id]);
+      await executeDbWrite('DELETE FROM product_media WHERE product_id = $1 OR UPPER(product_id) = UPPER($1);', [id]);
+    } catch (e: any) {
+      console.error('[DB Error on Delete Product]:', e);
+      return res.status(500).json({ error: `Database error deleting product: ${e.message}` });
     }
   }
 
@@ -967,17 +1066,18 @@ app.delete('/api/products/:id', requireAdminAuth, async (req: Request, res: Resp
   return res.json({ success: true, id });
 });
 
-
-
 // Delete Product Video Only
 app.delete('/api/products/:id/video', requireAdminAuth, async (req: Request, res: Response) => {
   const id = req.params.id;
 
   if (isDbConnected) {
     try {
-      await executeDualWrite("UPDATE store_items SET video_url = '', updated_at = NOW() WHERE id = $1;", [id]);
-      await executeDualWrite("DELETE FROM product_media WHERE product_id = $1 AND media_type = 'video';", [id]);
-    } catch (e) {}
+      await executeDbWrite("UPDATE store_items SET video_url = '', updated_at = NOW() WHERE id = $1 OR UPPER(id) = UPPER($1);", [id]);
+      await executeDbWrite("DELETE FROM product_media WHERE (product_id = $1 OR UPPER(product_id) = UPPER($1)) AND media_type = 'video';", [id]);
+    } catch (e: any) {
+      console.error('[DB Error on Delete Video]:', e);
+      return res.status(500).json({ error: `Database error deleting video: ${e.message}` });
+    }
   }
 
   const target = catalogData.products.find((p) => p.id === id || String(p.id).toUpperCase() === String(id).toUpperCase());
@@ -1027,7 +1127,7 @@ app.post('/api/categories', requireAdminAuth, async (req: Request, res: Response
     }
     if (isDbConnected && pgPool) {
       try {
-        await executeDualWrite('UPDATE store_items SET category = $1, updated_at = NOW() WHERE LOWER(category) = $2;', [cleanName, oldNorm]);
+        await executeDbWrite('UPDATE store_items SET category = $1, updated_at = NOW() WHERE LOWER(category) = $2;', [cleanName, oldNorm]);
       } catch (e) {}
     }
   }
@@ -1042,13 +1142,16 @@ app.post('/api/categories', requireAdminAuth, async (req: Request, res: Response
 
   if (isDbConnected) {
     try {
-      await executeDualWrite(
+      await executeDbWrite(
         `INSERT INTO categories (id, name, display_order, created_at, updated_at)
          VALUES ($1, $2, $3, $4, $5)
          ON CONFLICT (name) DO UPDATE SET display_order = EXCLUDED.display_order, updated_at = NOW();`,
         [categoryItem.id, categoryItem.name, categoryItem.display_order, categoryItem.created_at, categoryItem.updated_at]
       );
-    } catch (e) {}
+    } catch (e: any) {
+      console.error('[DB Error on Save Category]:', e);
+      return res.status(500).json({ error: `Database error saving category: ${e.message}` });
+    }
   }
 
   const existingIndex = catalogData.categories.findIndex((c) => c.id === id || c.name.toLowerCase() === cleanName.toLowerCase());
@@ -1080,8 +1183,11 @@ app.delete('/api/categories/:id', requireAdminAuth, async (req: Request, res: Re
 
   if (isDbConnected) {
     try {
-      await executeDualWrite('DELETE FROM categories WHERE id = $1;', [id]);
-    } catch (e) {}
+      await executeDbWrite('DELETE FROM categories WHERE id = $1;', [id]);
+    } catch (e: any) {
+      console.error('[DB Error on Delete Category]:', e);
+      return res.status(500).json({ error: `Database error deleting category: ${e.message}` });
+    }
   }
 
   catalogData.categories = catalogData.categories.filter((c) => c.id !== id);
@@ -1094,7 +1200,7 @@ app.delete('/api/categories/:id', requireAdminAuth, async (req: Request, res: Re
 app.get('/api/videos', async (_req: Request, res: Response) => {
   if (isDbConnected && pgPool) {
     try {
-      const vRes = await pgPool.query("SELECT * FROM store_items WHERE video_url IS NOT NULL AND video_url != '' ORDER BY created_at DESC;");
+      const vRes = await pgPool.query("SELECT * FROM store_items WHERE video_url IS NOT NULL AND video_url != '' AND is_deleted IS NOT true ORDER BY created_at DESC;");
       if (vRes.rows.length > 0) {
         return res.json(vRes.rows.filter((r: any) => !isDeletedProduct(r.id)));
       }
@@ -1167,13 +1273,16 @@ app.post('/api/media', requireAdminAuth, async (req: Request, res: Response) => 
 
   if (isDbConnected) {
     try {
-      await executeDualWrite(
+      await executeDbWrite(
         `INSERT INTO product_media (id, product_id, storage_path, media_type, file_name, file_size, display_order, created_at)
          VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
          ON CONFLICT (id) DO UPDATE SET storage_path = EXCLUDED.storage_path;`,
         [mediaItem.id, mediaItem.product_id, mediaItem.storage_path, mediaItem.media_type, mediaItem.file_name, mediaItem.file_size, mediaItem.display_order, mediaItem.created_at]
       );
-    } catch (e) {}
+    } catch (e: any) {
+      console.error('[DB Error on Save Media]:', e);
+      return res.status(500).json({ error: `Database error saving media: ${e.message}` });
+    }
   }
 
   catalogData.media.push(mediaItem);
@@ -1186,8 +1295,11 @@ app.delete('/api/media/:id', requireAdminAuth, async (req: Request, res: Respons
   const id = req.params.id;
   if (isDbConnected) {
     try {
-      await executeDualWrite('DELETE FROM product_media WHERE id = $1;', [id]);
-    } catch (e) {}
+      await executeDbWrite('DELETE FROM product_media WHERE id = $1;', [id]);
+    } catch (e: any) {
+      console.error('[DB Error on Delete Media]:', e);
+      return res.status(500).json({ error: `Database error deleting media: ${e.message}` });
+    }
   }
   catalogData.media = catalogData.media.filter((m) => m.id !== id);
   persistCatalogStorage();
@@ -1210,22 +1322,22 @@ app.post('/api/admin/sync-all', async (req: Request, res: Response) => {
     if (activeIds.length > 0 && isDbConnected) {
       try {
         const placeholders = activeIds.map((_, idx) => `$${idx + 1}`).join(', ');
-        await executeDualWrite(`DELETE FROM store_items WHERE id NOT IN (${placeholders});`, activeIds);
+        await executeDbWrite(`DELETE FROM store_items WHERE id NOT IN (${placeholders});`, activeIds);
       } catch (dbErr: any) {
         console.warn('[Sync warning]: Could not delete obsolete items from DB:', dbErr?.message);
       }
     }
 
-    // 2. Sync every product in catalogData to Cloud SQL & Supabase if connected
+    // 2. Sync every product in catalogData to PostgreSQL if connected
     if (isDbConnected) {
       const BATCH_SIZE = 15;
       for (let i = 0; i < catalogData.products.length; i += BATCH_SIZE) {
         const chunk = catalogData.products.slice(i, i + BATCH_SIZE);
         await Promise.allSettled(
           chunk.map((p) =>
-            executeDualWrite(
-              `INSERT INTO store_items (id, type, name, category, slug, description, image_url, video_url, tags, published, availability, created_at, updated_at)
-               VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
+            executeDbWrite(
+              `INSERT INTO store_items (id, type, name, category, slug, description, image_url, video_url, tags, published, availability, is_deleted, created_at, updated_at)
+               VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, false, $12, $13)
                ON CONFLICT (id) DO UPDATE SET
                  name = EXCLUDED.name,
                  category = EXCLUDED.category,
@@ -1236,6 +1348,7 @@ app.post('/api/admin/sync-all', async (req: Request, res: Response) => {
                  tags = EXCLUDED.tags,
                  published = EXCLUDED.published,
                  availability = EXCLUDED.availability,
+                 is_deleted = false,
                  updated_at = EXCLUDED.updated_at;`,
               [
                 p.id,
@@ -1426,8 +1539,14 @@ async function startServer() {
   // Graceful shutdown handling for Railway zero-downtime deployments
   const handleShutdown = (signal: string) => {
     console.log(`[Server] ${signal} signal received. Closing HTTP server gracefully...`);
-    server.close(() => {
+    server.close(async () => {
       console.log('[Server] HTTP server closed cleanly.');
+      if (supabasePool) {
+        try { await supabasePool.end(); } catch (e) {}
+      }
+      if (cloudSqlPool) {
+        try { await cloudSqlPool.end(); } catch (e) {}
+      }
       process.exit(0);
     });
   };

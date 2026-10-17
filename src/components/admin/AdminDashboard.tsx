@@ -972,30 +972,25 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
           {/* Action Links */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <button
-              type="button"
-              onClick={handleSyncAll}
-              disabled={isSyncingAll}
-              title="Push and broadcast all changes live immediately across Website, Supabase, and GitHub"
+            <div
               style={{
-                background: isSyncingAll ? '#e2e8f0' : 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-                border: 'none',
+                background: '#ecfdf5',
+                border: '1px solid #a7f3d0',
                 borderRadius: '6px',
-                padding: '7px 14px',
+                padding: '6px 12px',
                 fontSize: '12px',
                 fontWeight: 700,
-                color: '#ffffff',
-                cursor: isSyncingAll ? 'not-allowed' : 'pointer',
+                color: '#065f46',
                 display: 'flex',
                 alignItems: 'center',
                 gap: '6px',
                 whiteSpace: 'nowrap',
-                boxShadow: '0 2px 8px rgba(16, 185, 129, 0.35)',
               }}
+              title="Automatic synchronization active with PostgreSQL and live storefront"
             >
-              <span>{isSyncingAll ? '⏳' : '⚡'}</span>
-              <span>{isSyncingAll ? 'Syncing...' : 'Sync Live Everywhere'}</span>
-            </button>
+              <span style={{ color: '#10b981', fontSize: '10px' }}>●</span>
+              <span>Auto-Sync Active</span>
+            </div>
             <button
               type="button"
               onClick={onBackToStore}
@@ -1112,28 +1107,6 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
               </div>
 
               <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
-                <button
-                  type="button"
-                  onClick={handleSyncAll}
-                  disabled={isSyncingAll}
-                  style={{
-                    background: isSyncingAll ? '#64748b' : 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-                    color: '#ffffff',
-                    border: 'none',
-                    borderRadius: '8px',
-                    padding: '11px 18px',
-                    fontSize: '13px',
-                    fontWeight: 800,
-                    cursor: isSyncingAll ? 'not-allowed' : 'pointer',
-                    boxShadow: '0 4px 12px rgba(16, 185, 129, 0.35)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '6px',
-                  }}
-                >
-                  <span>{isSyncingAll ? '⏳' : '⚡'}</span>
-                  <span>{isSyncingAll ? 'Syncing...' : 'Sync Live Everywhere'}</span>
-                </button>
                 <button
                   type="button"
                   onClick={handleOpenAddPhotoProduct}

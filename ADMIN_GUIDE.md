@@ -94,23 +94,32 @@ The dashboard is organized into 12 independent, dedicated sections with a deskto
 
 ---
 
-## 5. Automatic Real-Time Database Connection (DATABASE_URL)
+## 5. Automatic PostgreSQL Database Connection (DATABASE_URL)
 
-The application now supports **instant zero-configuration database connection**:
-- As soon as you set `DATABASE_URL` (in your `.env` or Vercel Environment Variables), the server automatically connects to your PostgreSQL database in real time.
-- If your database is new, it automatically creates the required tables (`store_items`, `categories`, `product_media`) and auto-seeds all 174 handcrafted products so you never start with an empty catalogue.
+The application supports **instant zero-configuration database connection**:
+- When you set `DATABASE_URL` in your Railway Environment Variables (pointing to your Supabase PostgreSQL database), the server automatically connects to your database.
+- On first connection to an empty database, it automatically creates the required tables (`store_items`, `categories`, `product_media`, `deleted_product_ids`) and auto-seeds the baseline catalog so you never start with an empty catalogue.
+- Supabase PostgreSQL acts as the single source of truth: all product adds, edits, and deletions are saved directly to PostgreSQL.
 - If `DATABASE_URL` is omitted, the application operates smoothly with local file storage.
 
 ---
 
-## 6. Environment Variables for Deployment
+## 6. Railway Deployment & Environment Variables
 
-Add the following environment variables in your deployment settings:
+### Production Build & Start Commands (handled automatically via `railway.json` and `Procfile`):
+- **Build Command**: `npm run build`
+- **Start Command**: `npm start` (or `tsx server.ts`)
+- **Health Check Path**: `/api/health`
 
-| Variable | Description | Example |
+### Environment Variables to set in Railway Service Variables:
+
+| Variable | Description | Example / Recommended Value |
 |---|---|---|
-| `DATABASE_URL` | PostgreSQL connection string (Supabase, Neon, etc.) | `postgres://postgres:...@...:5432/postgres` |
-| `ADMIN_USERNAME` | Admin email | `anmolkala.in@gmail.com` |
-| `ADMIN_PASSWORD` | Initial admin password | `mnbvcxz12` |
-| `SESSION_SECRET` | Secret string for HMAC session tokens | `anmolkala-production-secret...` |
-| `PORT` | Web server port | `3000` |
+| `DATABASE_URL` | Supabase PostgreSQL connection string (Transaction pooler or Session pooler) | `postgres://postgres.[ref]:[password]@aws-0-[region].pooler.supabase.com:6543/postgres?sslmode=require` |
+| `NODE_ENV` | Production environment flag | `production` |
+| `PORT` | Web server port (provided automatically by Railway) | `3000` |
+| `ADMIN_USERNAME` | Admin login email | `anmolkala.in@gmail.com` |
+| `ADMIN_PASSWORD` | Admin login password | `mnbvcxz12` (or your chosen secure password) |
+| `SESSION_SECRET` | Secret string for HMAC session tokens (generate 32+ random chars) | `anmolkala-production-secret-session-key-2026-secure` |
+| `SUPABASE_URL` | (Optional) Supabase Project URL for image bucket storage | `https://[ref].supabase.co` |
+| `SUPABASE_KEY` | (Optional) Supabase anon or service role key | `eyJhbGciOi...` |

@@ -8,6 +8,11 @@ import pg from 'pg';
 import { fileURLToPath } from 'url';
 import { createRequire } from 'module';
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+dotenv.config({ override: true });
+
 const require = createRequire(import.meta.url);
 let initialDataJson: any = null;
 try {
@@ -19,16 +24,16 @@ try {
   } catch (err) {}
 }
 
-dotenv.config({ override: true });
-
 const { Pool } = pg;
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 
 // Port configuration: Railway supplies process.env.PORT; default to 3000 for AI Studio / local
 const PORT = parseInt(process.env.PORT || '3000', 10);
-const isProd = process.env.NODE_ENV === 'production';
+const isProd =
+  process.env.NODE_ENV === 'production' ||
+  Boolean(process.env.RAILWAY_ENVIRONMENT) ||
+  Boolean(process.env.RAILWAY_SERVICE_ID) ||
+  Boolean(process.env.RAILWAY_STATIC_URL) ||
+  fs.existsSync(path.resolve(__dirname, 'dist/index.html'));
 
 // Persistent tombstone storage of duplicate and deleted product IDs
 const deletedIdsFile = path.resolve(__dirname, 'src/data/deleted_ids.json');
@@ -685,6 +690,16 @@ app.use(express.urlencoded({ extended: true, limit: '100mb' }));
 
 // Anti-Cache & DB synchronization middleware for all API requests
 app.use(async (req: Request, res: Response, next: NextFunction) => {
+  // Always let health checks respond immediately (< 5ms) without waiting for database initialization
+  if (
+    req.path === '/api/health' ||
+    req.path === '/health' ||
+    req.path === '/api' ||
+    req.path === '/api/index'
+  ) {
+    return next();
+  }
+
   if (req.url.startsWith('/api') || req.url.startsWith('/products') || req.url.startsWith('/categories')) {
     res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0');
     res.setHeader('Pragma', 'no-cache');
@@ -713,7 +728,7 @@ if (fs.existsSync(path.resolve(__dirname, 'dist/products'))) {
 }
 
 // API Health and Status root endpoint
-app.get(['/api', '/api/index', '/api/health'], (_req: Request, res: Response) => {
+app.get(['/api', '/api/index', '/api/health', '/health'], (_req: Request, res: Response) => {
   return res.json({
     status: 'ok',
     service: 'AnmolKala API',
@@ -911,6 +926,48 @@ app.get('/api/products', async (req: Request, res: Response) => {
   return res.json(items);
 });
 
+// Reusable media buffer persistence supporting Supabase Storage & local volumes
+async function persistMediaBuffer(buffer: Buffer, filename: string, mimeType: string): Promise<string> {
+  const supabaseUrl = (process.env.SUPABASE_URL || '').trim();
+  const supabaseKey = (process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_KEY || '').trim();
+
+  // 1. Try uploading to Supabase Storage bucket if configured
+  if (supabaseUrl && supabaseKey) {
+    try {
+      const cleanUrl = supabaseUrl.replace(/\/$/, '');
+      const uploadEndpoint = `${cleanUrl}/storage/v1/object/products/${filename}`;
+      const uploadRes = await fetch(uploadEndpoint, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${supabaseKey}`,
+          'Content-Type': mimeType,
+          'x-upsert': 'true',
+        },
+        body: buffer,
+      });
+      if (uploadRes.ok) {
+        return `${cleanUrl}/storage/v1/object/public/products/${filename}`;
+      }
+    } catch (e: any) {
+      console.warn('[Supabase Storage Upload Notice]:', e.message);
+    }
+  }
+
+  // 2. Fallback to filesystem (with custom UPLOADS_DIR support for Railway Volumes)
+  const targetDir = process.env.UPLOADS_DIR || path.resolve(__dirname, 'public/products');
+  if (!fs.existsSync(targetDir)) {
+    fs.mkdirSync(targetDir, { recursive: true });
+  }
+  fs.writeFileSync(path.resolve(targetDir, filename), buffer);
+
+  const distDir = path.resolve(__dirname, 'dist/products');
+  if (fs.existsSync(distDir)) {
+    fs.writeFileSync(path.resolve(distDir, filename), buffer);
+  }
+
+  return `/products/${filename}`;
+}
+
 // Save (Create or Update) Product
 app.post('/api/products', requireAdminAuth, async (req: Request, res: Response) => {
   const item = req.body;
@@ -931,18 +988,10 @@ app.post('/api/products', requireAdminAuth, async (req: Request, res: Response) 
       const match = cleanImageUrl.match(/^data:image\/([a-zA-Z0-9]+);base64,(.+)$/);
       if (match) {
         const ext = match[1] === 'jpeg' ? 'jpg' : match[1];
+        const mimeType = match[1] === 'jpeg' ? 'image/jpeg' : `image/${match[1]}`;
         const buffer = Buffer.from(match[2], 'base64');
         const filename = `up_${Date.now()}_${id.toLowerCase().replace(/[^a-z0-9]/g, '')}.${ext}`;
-        const targetDir = path.resolve(__dirname, 'public/products');
-        if (!fs.existsSync(targetDir)) {
-          fs.mkdirSync(targetDir, { recursive: true });
-        }
-        fs.writeFileSync(path.resolve(targetDir, filename), buffer);
-        const distDir = path.resolve(__dirname, 'dist/products');
-        if (fs.existsSync(distDir)) {
-          fs.writeFileSync(path.resolve(distDir, filename), buffer);
-        }
-        cleanImageUrl = `/products/${filename}`;
+        cleanImageUrl = await persistMediaBuffer(buffer, filename, mimeType);
       }
     } catch (e) {}
   }
@@ -1244,18 +1293,10 @@ app.post('/api/media', requireAdminAuth, async (req: Request, res: Response) => 
       const match = finalStoragePath.match(/^data:image\/([a-zA-Z0-9]+);base64,(.+)$/);
       if (match) {
         const ext = match[1] === 'jpeg' ? 'jpg' : match[1];
+        const mimeType = match[1] === 'jpeg' ? 'image/jpeg' : `image/${match[1]}`;
         const buffer = Buffer.from(match[2], 'base64');
         const filename = `up_med_${Date.now()}_${Math.random().toString(36).substring(2, 7)}.${ext}`;
-        const targetDir = path.resolve(__dirname, 'public/products');
-        if (!fs.existsSync(targetDir)) {
-          fs.mkdirSync(targetDir, { recursive: true });
-        }
-        fs.writeFileSync(path.resolve(targetDir, filename), buffer);
-        const distDir = path.resolve(__dirname, 'dist/products');
-        if (fs.existsSync(distDir)) {
-          fs.writeFileSync(path.resolve(distDir, filename), buffer);
-        }
-        finalStoragePath = `/products/${filename}`;
+        finalStoragePath = await persistMediaBuffer(buffer, filename, mimeType);
       }
     } catch (e) {}
   }
@@ -1525,9 +1566,17 @@ async function startServer() {
     app.use(express.static(publicPath));
     app.use((req: Request, res: Response) => {
       if (req.url.startsWith('/api/') || req.url.startsWith('/products/')) {
-        return res.status(404).json({ error: 'Not found' });
+        return res.status(404).json({ error: 'Endpoint not found' });
       }
-      res.sendFile(path.join(distPath, 'index.html'));
+      const distIndex = path.join(distPath, 'index.html');
+      if (fs.existsSync(distIndex)) {
+        return res.sendFile(distIndex);
+      }
+      const rootIndex = path.join(__dirname, 'index.html');
+      if (fs.existsSync(rootIndex)) {
+        return res.sendFile(rootIndex);
+      }
+      return res.status(200).send('<!doctype html><html><head><title>AnmolKala</title></head><body><h1>AnmolKala Storefront</h1><p>Starting up...</p></body></html>');
     });
   }
 

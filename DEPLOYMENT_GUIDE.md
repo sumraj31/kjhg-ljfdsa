@@ -67,19 +67,25 @@ This guide explains how the deployment works, how the "Application failed to res
 ---
 
 ### 4. `ADMIN_USERNAME`
-- **Value:** `anmolkala.in@gmail.com`
+- **Value:** your admin email address.
 - **Where to set it:** Railway Variables tab.
 
 ---
 
-### 5. `ADMIN_PASSWORD`
-- **Value:** `mnbvcxz12` (or your chosen strong password).
+### 5. `ADMIN_PASSWORD` *(required)*
+- **Value:** a strong, unique password. There is no default; if it is unset (and no saved password exists), admin login returns 503.
 - **Where to set it:** Railway Variables tab.
 
 ---
 
-### 6. `SESSION_SECRET`
-- **Value:** Any secure 32+ character random string (e.g., `anmolkala-production-secret-session-key-2026-secure`).
+### 6. `SESSION_SECRET` *(required)*
+- **Value:** a random 32+ character string, e.g. generated with `openssl rand -hex 32`. If unset, the server logs an error and uses a random secret that changes on every restart, logging all admins out.
+- **Where to set it:** Railway Variables tab.
+
+---
+
+### 6b. `ADMIN_RECOVERY_SECRET` *(optional)*
+- **Value:** a random secret used by the forgot/reset password flow. If unset, forgot/reset password is disabled (403).
 - **Where to set it:** Railway Variables tab.
 
 ---
@@ -110,9 +116,10 @@ This guide explains how the deployment works, how the "Application failed to res
    - Click the service box -> **Variables** tab -> Add:
      - `DATABASE_URL` = your Supabase connection string
      - `NODE_ENV` = `production`
-     - `SESSION_SECRET` = `anmolkala-production-secret-session-key-2026-secure`
-     - `ADMIN_USERNAME` = `anmolkala.in@gmail.com`
-     - `ADMIN_PASSWORD` = `mnbvcxz12`
+     - `SESSION_SECRET` = a random 32+ character string
+     - `ADMIN_USERNAME` = your admin email
+     - `ADMIN_PASSWORD` = a strong, unique password
+     - `ADMIN_RECOVERY_SECRET` = *(optional)* enables forgot/reset password
 
 4. **Deploy & Generate Domain**:
    - Railway will automatically run:

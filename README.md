@@ -29,6 +29,13 @@ A modern React & TypeScript web application for AnmolKala, showcasing handmade c
   - Permanent unique IDs for all products and media.
   - Self-service admin password update with current password verification.
 
+## Required Environment Variables
+
+- `ADMIN_USERNAME`: admin login email.
+- `ADMIN_PASSWORD`: admin password. Required; admin login is disabled (503) without it.
+- `SESSION_SECRET`: random secret for signing admin tokens. Required in production.
+- `ADMIN_RECOVERY_SECRET`: optional. Enables the forgot/reset password flow; if unset, that flow returns 403.
+
 ## Tech Stack
 
 - **Framework**: React 19 + TypeScript

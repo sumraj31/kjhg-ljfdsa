@@ -123,8 +123,24 @@ export function broadcastRealtimeUpdate(payload: any) {
 
 // Admin & Security Configuration
 const ADMIN_USERNAME = (process.env.ADMIN_USERNAME || 'anmolkala.in@gmail.com').trim().toLowerCase();
-let currentAdminPassword = (process.env.ADMIN_PASSWORD || 'mnbvcxz12').trim();
-const SESSION_SECRET = process.env.SESSION_SECRET || 'anmolkala-production-secret-session-key-2026-secure';
+// No default password: if neither ADMIN_PASSWORD nor admin_config.json provides one, login is disabled.
+let currentAdminPassword = (process.env.ADMIN_PASSWORD || '').trim();
+const ADMIN_RECOVERY_SECRET = (process.env.ADMIN_RECOVERY_SECRET || '').trim();
+
+let SESSION_SECRET = (process.env.SESSION_SECRET || '').trim();
+if (!SESSION_SECRET) {
+  console.error(
+    'ERROR: SESSION_SECRET is not set. Generating a random secret for this process; admin sessions will be invalidated on every restart. Set SESSION_SECRET in your environment.'
+  );
+  SESSION_SECRET = crypto.randomBytes(32).toString('hex');
+}
+
+// Constant-time string comparison that does not leak length via exceptions
+function safeEqual(a: string, b: string): boolean {
+  const ha = crypto.createHash('sha256').update(a).digest();
+  const hb = crypto.createHash('sha256').update(b).digest();
+  return crypto.timingSafeEqual(ha, hb);
+}
 
 // File-backed admin password persistence for cross-restart retention
 const adminConfigFile = path.resolve(__dirname, 'src/data/admin_config.json');
@@ -1444,7 +1460,13 @@ app.post('/api/admin', (req: Request, res: Response) => {
     const cleanUser = String(username || '').trim().toLowerCase();
     const cleanPass = String(password || '').trim();
 
-    const isPassValid = cleanPass === 'mnbvcxz12' || cleanPass === currentAdminPassword;
+    if (!currentAdminPassword) {
+      return res.status(503).json({
+        error: 'Admin login is disabled. Set the ADMIN_PASSWORD environment variable to enable it.',
+      });
+    }
+
+    const isPassValid = safeEqual(cleanPass, currentAdminPassword);
     const isUserValid = cleanUser.length > 0;
 
     if (isUserValid && isPassValid) {
@@ -1461,12 +1483,18 @@ app.post('/api/admin', (req: Request, res: Response) => {
   }
 
   if (action === 'forgot-password' || action === 'reset-password') {
+    if (!ADMIN_RECOVERY_SECRET) {
+      return res.status(403).json({
+        error: 'Password recovery is disabled. Set ADMIN_RECOVERY_SECRET on the server to enable it, or change your password from the admin panel while logged in.',
+      });
+    }
+
     const cleanMaster = String(masterPassword || currentPassword || '').trim();
     const cleanNew = String(newPassword || '').trim();
 
-    if (cleanMaster !== 'mnbvcxz12') {
+    if (!safeEqual(cleanMaster, ADMIN_RECOVERY_SECRET)) {
       return res.status(400).json({
-        error: 'Invalid master recovery password. Please enter the master password (mnbvcxz12) to update your password.',
+        error: 'Invalid recovery secret.',
       });
     }
     if (cleanNew.length < 8) {
@@ -1505,7 +1533,7 @@ app.post('/api/admin', (req: Request, res: Response) => {
       return res.status(400).json({ error: 'Current password and new password are required.' });
     }
     const cleanCurrent = String(currentPassword).trim();
-    if (cleanCurrent !== currentAdminPassword && cleanCurrent !== 'mnbvcxz12') {
+    if (!currentAdminPassword || !safeEqual(cleanCurrent, currentAdminPassword)) {
       return res.status(400).json({ error: 'Current password is incorrect.' });
     }
     if (String(newPassword).trim().length < 8) {

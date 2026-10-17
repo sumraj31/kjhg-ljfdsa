@@ -205,6 +205,25 @@ export function notifyCatalogUpdated() {
   } catch (e) {}
 }
 
+export async function safeReadJson<T = any>(res: Response): Promise<{ ok: boolean; data: T | null; text: string }> {
+  try {
+    const text = await res.text();
+    const contentType = res.headers.get('content-type') || '';
+    const trimmed = text.trim();
+    if (contentType.includes('application/json') || trimmed.startsWith('{') || trimmed.startsWith('[')) {
+      try {
+        const data = JSON.parse(text) as T;
+        return { ok: res.ok, data, text };
+      } catch {
+        return { ok: false, data: null, text };
+      }
+    }
+    return { ok: false, data: null, text };
+  } catch (e: any) {
+    return { ok: false, data: null, text: e?.message || '' };
+  }
+}
+
 export async function fetchProducts(): Promise<StoreItem[]> {
   // 1. Try real-time API endpoint
   try {
@@ -215,16 +234,11 @@ export async function fetchProducts(): Promise<StoreItem[]> {
         'Pragma': 'no-cache',
       },
     });
-    if (res.ok) {
-      const contentType = res.headers.get('content-type') || '';
-      if (contentType.includes('application/json')) {
-        const data = await res.json();
-        if (Array.isArray(data) && data.length > 0) {
-          const clean = data.filter((p: any) => !DELETED_PRODUCT_IDS.has(p.id));
-          updateLocalCatalogCache(clean);
-          return clean as StoreItem[];
-        }
-      }
+    const parsed = await safeReadJson<any[]>(res);
+    if (parsed.ok && Array.isArray(parsed.data) && parsed.data.length > 0) {
+      const clean = parsed.data.filter((p: any) => !DELETED_PRODUCT_IDS.has(p.id));
+      updateLocalCatalogCache(clean);
+      return clean as StoreItem[];
     }
   } catch (e) {
     console.warn('[Catalog] Error fetching fresh products from /api/products:', e);
@@ -238,16 +252,11 @@ export async function fetchProducts(): Promise<StoreItem[]> {
         'Cache-Control': 'no-cache, no-store, must-revalidate',
       },
     });
-    if (res.ok) {
-      const contentType = res.headers.get('content-type') || '';
-      if (contentType.includes('application/json')) {
-        const data = await res.json();
-        if (Array.isArray(data) && data.length > 0) {
-          const clean = data.filter((p: any) => !DELETED_PRODUCT_IDS.has(p.id));
-          updateLocalCatalogCache(clean);
-          return clean as StoreItem[];
-        }
-      }
+    const parsed = await safeReadJson<any[]>(res);
+    if (parsed.ok && Array.isArray(parsed.data) && parsed.data.length > 0) {
+      const clean = parsed.data.filter((p: any) => !DELETED_PRODUCT_IDS.has(p.id));
+      updateLocalCatalogCache(clean);
+      return clean as StoreItem[];
     }
   } catch (e) {
     console.warn('[Catalog] Error fetching from static products.json:', e);
@@ -290,8 +299,9 @@ export async function saveProduct(item: StoreItem): Promise<StoreItem> {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(cleanItem),
     });
-    if (res.ok) {
-      const saved = await res.json();
+    const parsed = await safeReadJson<StoreItem>(res);
+    if (parsed.ok && parsed.data) {
+      const saved = parsed.data;
       const next = memoryCatalog.some((p) => p.id === saved.id)
         ? memoryCatalog.map((p) => (p.id === saved.id ? saved : p))
         : [saved, ...memoryCatalog];
@@ -344,23 +354,21 @@ export async function syncAllEverywhere(token?: string): Promise<{ success: bool
       body: JSON.stringify({ token }),
     });
 
-    const contentType = res.headers.get('content-type') || '';
-    if (res.ok) {
-      if (contentType.includes('application/json')) {
-        const data = await res.json();
-        notifyCatalogUpdated();
-        return { success: true, message: data.message || 'Synced live everywhere across Website and Database!' };
-      }
+    const parsed = await safeReadJson<{ message?: string; error?: string }>(res);
+    if (parsed.ok) {
       notifyCatalogUpdated();
-      return { success: true, message: 'All changes synced live everywhere!' };
+      return { success: true, message: parsed.data?.message || 'Synced live everywhere across Website and Database!' };
     }
 
-    if (contentType.includes('application/json')) {
-      const data = await res.json();
-      return { success: false, message: data.error || `Sync error: HTTP ${res.status}` };
+    if (parsed.data?.error) {
+      return { success: false, message: parsed.data.error };
     }
-    const text = await res.text();
-    return { success: false, message: text.slice(0, 150) || `Sync failed with HTTP ${res.status}.` };
+
+    const cleanMsg = parsed.text.includes('The deployment')
+      ? 'Vercel serverless function is initializing. Saved to local catalog.'
+      : (parsed.text.slice(0, 150) || `Sync status: HTTP ${res.status}`);
+
+    return { success: false, message: cleanMsg };
   } catch (e: any) {
     return { success: false, message: e.message || 'Sync failed.' };
   }
@@ -378,11 +386,9 @@ export async function fetchCategories(): Promise<CategoryItem[]> {
         'Pragma': 'no-cache',
       },
     });
-    if (res.ok) {
-      const data = await res.json();
-      if (Array.isArray(data) && data.length > 0) {
-        return data as CategoryItem[];
-      }
+    const parsed = await safeReadJson<CategoryItem[]>(res);
+    if (parsed.ok && Array.isArray(parsed.data) && parsed.data.length > 0) {
+      return parsed.data;
     }
   } catch (e) {}
 
@@ -402,8 +408,9 @@ export async function saveCategory(cat: CategoryItem): Promise<CategoryItem> {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(cat),
     });
-    if (res.ok) {
-      return await res.json();
+    const parsed = await safeReadJson<CategoryItem>(res);
+    if (parsed.ok && parsed.data) {
+      return parsed.data;
     }
   } catch (e) {}
 
@@ -432,11 +439,11 @@ export async function deleteCategory(id: string): Promise<{ success: boolean; er
     const res = await fetch(`/api/categories/${encodeURIComponent(id)}`, {
       method: 'DELETE',
     });
-    const data = await res.json();
-    if (res.ok) {
+    const parsed = await safeReadJson<{ error?: string }>(res);
+    if (parsed.ok) {
       return { success: true };
     }
-    return { success: false, error: data.error || 'Failed to delete category' };
+    return { success: false, error: parsed.data?.error || (parsed.text.length < 100 && parsed.text ? parsed.text : 'Failed to delete category') };
   } catch (e: any) {
     return { success: false, error: e.message || 'Network error deleting category' };
   }
@@ -449,11 +456,9 @@ export async function fetchMediaItems(productId?: string): Promise<MediaItem[]> 
   try {
     const url = productId ? `/api/media?product_id=${encodeURIComponent(productId)}` : '/api/media';
     const res = await fetch(url);
-    if (res.ok) {
-      const data = await res.json();
-      if (Array.isArray(data) && data.length > 0) {
-        return data as MediaItem[];
-      }
+    const parsed = await safeReadJson<MediaItem[]>(res);
+    if (parsed.ok && Array.isArray(parsed.data) && parsed.data.length > 0) {
+      return parsed.data;
     }
   } catch (e) {}
 
@@ -713,18 +718,16 @@ export async function loginAdmin(
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ action: 'login', username: cleanEmail, password: cleanPass }),
     });
-    if (res.ok) {
-      const data = await res.json();
-      if (data.success && data.token) {
-        const session: AdminSession = {
-          email: data.user || cleanEmail,
-          token: data.token,
-          expires_at: data.expires_at || Date.now() + 86400000,
-          role: 'admin',
-        };
-        setAdminSession(session);
-        return { success: true, session };
-      }
+    const parsed = await safeReadJson<any>(res);
+    if (parsed.ok && parsed.data && parsed.data.success && parsed.data.token) {
+      const session: AdminSession = {
+        email: parsed.data.user || cleanEmail,
+        token: parsed.data.token,
+        expires_at: parsed.data.expires_at || Date.now() + 86400000,
+        role: 'admin',
+      };
+      setAdminSession(session);
+      return { success: true, session };
     }
   } catch (e) {}
 
@@ -816,23 +819,21 @@ export async function syncAllToCloudAndGithub(): Promise<{ success: boolean; mes
       body: JSON.stringify({ token }),
     });
 
-    const contentType = res.headers.get('content-type') || '';
-    if (res.ok) {
-      if (contentType.includes('application/json')) {
-        const data = await res.json();
-        notifyCatalogUpdated();
-        return { success: true, message: data.message || 'All changes synced live everywhere!' };
-      }
+    const parsed = await safeReadJson<{ message?: string; error?: string }>(res);
+    if (parsed.ok) {
       notifyCatalogUpdated();
-      return { success: true, message: 'All changes synced live everywhere!' };
+      return { success: true, message: parsed.data?.message || 'All changes synced live everywhere!' };
     }
 
-    if (contentType.includes('application/json')) {
-      const err = await res.json();
-      return { success: false, message: err.error || `Sync error: HTTP ${res.status}` };
+    if (parsed.data?.error) {
+      return { success: false, message: parsed.data.error };
     }
-    const text = await res.text();
-    return { success: false, message: text.slice(0, 150) || `Sync failed with HTTP ${res.status}` };
+
+    const cleanMsg = parsed.text.includes('The deployment')
+      ? 'Vercel serverless function is initializing. Saved to local catalog.'
+      : (parsed.text.slice(0, 150) || `Sync status: HTTP ${res.status}`);
+
+    return { success: false, message: cleanMsg };
   } catch (e: any) {
     return { success: false, message: e.message || 'Network error syncing.' };
   }

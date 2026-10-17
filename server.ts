@@ -6,7 +6,18 @@ import fs from 'fs';
 import crypto from 'crypto';
 import pg from 'pg';
 import { fileURLToPath } from 'url';
-import initialDataJson from './src/data/initialData.json';
+import { createRequire } from 'module';
+
+const require = createRequire(import.meta.url);
+let initialDataJson: any = null;
+try {
+  initialDataJson = require('./src/data/initialData.json');
+} catch (e) {
+  try {
+    const raw = fs.readFileSync(path.resolve(__dirname, 'src/data/initialData.json'), 'utf-8');
+    initialDataJson = JSON.parse(raw);
+  } catch (err) {}
+}
 
 dotenv.config({ override: true });
 
@@ -336,8 +347,8 @@ async function initDatabase() {
       supabasePool = new Pool({
         connectionString: rawDatabaseUrl,
         ssl: isLocalhost ? false : { rejectUnauthorized: false },
-        max: 10,
-        connectionTimeoutMillis: 8000,
+        max: 5,
+        connectionTimeoutMillis: 3000,
       });
 
       supabasePool.on('error', (err) => {
@@ -406,28 +417,41 @@ async function initDatabase() {
       const checkRes = await pgPool.query('SELECT COUNT(*) FROM store_items;');
       const count = parseInt(checkRes.rows[0].count, 10);
       if (count === 0 && catalogData.products.length > 0) {
-        console.log(`[Database] Seeding ${catalogData.products.length} products to Supabase/PostgreSQL...`);
-        for (const p of catalogData.products) {
-          if (!EXCLUDED_DUPLICATE_IDS.has(p.id)) {
+        console.log(`[Database] Fast batch-seeding ${catalogData.products.length} products to database...`);
+        const validProds = catalogData.products.filter(
+          (p) => !EXCLUDED_DUPLICATE_IDS.has(p.id) && !EXCLUDED_DUPLICATE_IDS.has(String(p.id).toUpperCase())
+        );
+        const BATCH_SIZE = 50;
+        for (let i = 0; i < validProds.length; i += BATCH_SIZE) {
+          const chunk = validProds.slice(i, i + BATCH_SIZE);
+          const values: any[] = [];
+          const rowsSql: string[] = [];
+          let paramIdx = 1;
+          for (const p of chunk) {
+            rowsSql.push(`($${paramIdx}, $${paramIdx + 1}, $${paramIdx + 2}, $${paramIdx + 3}, $${paramIdx + 4}, $${paramIdx + 5}, $${paramIdx + 6}, $${paramIdx + 7}, $${paramIdx + 8}, $${paramIdx + 9}, $${paramIdx + 10}, $${paramIdx + 11}, $${paramIdx + 12})`);
+            values.push(
+              p.id,
+              p.type || 'product',
+              p.name,
+              p.category,
+              p.slug,
+              p.description || '',
+              p.image_url || p.image || '/logo.png',
+              p.video_url || '',
+              p.tags || '',
+              p.published !== false,
+              p.availability || 'in_stock',
+              p.created_at || new Date().toISOString(),
+              p.updated_at || new Date().toISOString()
+            );
+            paramIdx += 13;
+          }
+          if (rowsSql.length > 0) {
             await pgPool.query(
               `INSERT INTO store_items (id, type, name, category, slug, description, image_url, video_url, tags, published, availability, created_at, updated_at)
-               VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
+               VALUES ${rowsSql.join(', ')}
                ON CONFLICT (id) DO NOTHING;`,
-              [
-                p.id,
-                p.type || 'product',
-                p.name,
-                p.category,
-                p.slug,
-                p.description || '',
-                p.image_url || '/logo.png',
-                p.video_url || '',
-                p.tags || '',
-                p.published !== false,
-                p.availability || 'in_stock',
-                p.created_at || new Date().toISOString(),
-                p.updated_at || new Date().toISOString(),
-              ]
+              values
             );
           }
         }
@@ -462,7 +486,10 @@ dbInitPromise = initDatabase();
 async function ensureDatabase() {
   if (dbInitPromise) {
     try {
-      await dbInitPromise;
+      await Promise.race([
+        dbInitPromise,
+        new Promise((resolve) => setTimeout(resolve, 1500)),
+      ]);
     } catch (e) {}
   }
 }
@@ -1045,41 +1072,43 @@ app.post('/api/admin/sync-all', async (req: Request, res: Response) => {
 
     // 2. Sync every product in catalogData to Cloud SQL & Supabase if connected
     if (isDbConnected) {
-      for (const p of catalogData.products) {
-        try {
-          await executeDualWrite(
-            `INSERT INTO store_items (id, type, name, category, slug, description, image_url, video_url, tags, published, availability, created_at, updated_at)
-             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
-             ON CONFLICT (id) DO UPDATE SET
-               name = EXCLUDED.name,
-               category = EXCLUDED.category,
-               slug = EXCLUDED.slug,
-               description = EXCLUDED.description,
-               image_url = EXCLUDED.image_url,
-               video_url = EXCLUDED.video_url,
-               tags = EXCLUDED.tags,
-               published = EXCLUDED.published,
-               availability = EXCLUDED.availability,
-               updated_at = EXCLUDED.updated_at;`,
-            [
-              p.id,
-              p.type || 'product',
-              p.name,
-              p.category,
-              p.slug,
-              p.description || '',
-              p.image_url || p.image || '/logo.png',
-              p.video_url || '',
-              p.tags || '',
-              p.published !== false,
-              p.availability || 'in_stock',
-              p.created_at || new Date().toISOString(),
-              p.updated_at || new Date().toISOString(),
-            ]
-          );
-        } catch (itemErr: any) {
-          console.warn(`[Sync warning for ${p.id}]:`, itemErr?.message);
-        }
+      const BATCH_SIZE = 15;
+      for (let i = 0; i < catalogData.products.length; i += BATCH_SIZE) {
+        const chunk = catalogData.products.slice(i, i + BATCH_SIZE);
+        await Promise.allSettled(
+          chunk.map((p) =>
+            executeDualWrite(
+              `INSERT INTO store_items (id, type, name, category, slug, description, image_url, video_url, tags, published, availability, created_at, updated_at)
+               VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
+               ON CONFLICT (id) DO UPDATE SET
+                 name = EXCLUDED.name,
+                 category = EXCLUDED.category,
+                 slug = EXCLUDED.slug,
+                 description = EXCLUDED.description,
+                 image_url = EXCLUDED.image_url,
+                 video_url = EXCLUDED.video_url,
+                 tags = EXCLUDED.tags,
+                 published = EXCLUDED.published,
+                 availability = EXCLUDED.availability,
+                 updated_at = EXCLUDED.updated_at;`,
+              [
+                p.id,
+                p.type || 'product',
+                p.name,
+                p.category,
+                p.slug,
+                p.description || '',
+                p.image_url || p.image || '/logo.png',
+                p.video_url || '',
+                p.tags || '',
+                p.published !== false,
+                p.availability || 'in_stock',
+                p.created_at || new Date().toISOString(),
+                p.updated_at || new Date().toISOString(),
+              ]
+            )
+          )
+        );
       }
     }
 

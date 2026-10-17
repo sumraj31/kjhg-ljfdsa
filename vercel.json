@@ -6,10 +6,10 @@
   "rewrites": [
     {
       "source": "/api/(.*)",
-      "destination": "/api"
+      "destination": "/api/index?__path=$1"
     },
     {
-      "source": "/((?!api|products/|products.json|logo.png|robots.txt|sitemap.xml|assets/|favicon.ico).*)",
+      "source": "/((?!api|products/|products.json|logo.png|robots.txt|sitemap.xml|assets/).*)",
       "destination": "/index.html"
     }
   ]

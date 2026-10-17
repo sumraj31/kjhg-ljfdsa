@@ -135,3 +135,26 @@ This guide explains how the deployment works, how the "Application failed to res
      }
      ```
    - Storefront and admin login (`/admin/login`) are ready to use.
+
+---
+
+## 4. Custom Domain & DNS Setup (`anmolkala.in` and `www.anmolkala.in`)
+
+### 1. Authoritative Nameservers
+If the domain's nameservers at the registry are set to Vercel (`ns1.vercel-dns.com` and `ns2.vercel-dns.com`):
+- All DNS records MUST be configured in the **Vercel DNS Dashboard** (or nameservers must be changed back to registrar defaults in GoDaddy).
+- Records added at GoDaddy will have NO effect while Vercel nameservers remain active.
+
+### 2. Exact DNS Records for Railway
+
+| Type | Name / Host | Target / Value | Description |
+|---|---|---|---|
+| **CNAME** or **A** | `@` (root) | `qavxslly.up.railway.app` (or `69.46.46.16`) | Points `anmolkala.in` to Railway |
+| **TXT** | `_railway-verify` | `railway-verify=d5e719024fcd3af851cc5a7ac92a8b7d1e5b7fd5e52e884e7f8ca1888d96d9dc` | Railway domain ownership verification |
+| **CNAME** | `www` | `qavxslly.up.railway.app` (or `kjhg-ljfdsa-production.up.railway.app`) | Points `www.anmolkala.in` to Railway |
+
+### 3. Railway Custom Domain Settings
+In Railway Dashboard -> Service -> **Settings** -> **Networking**:
+- Add `anmolkala.in`
+- Add `www.anmolkala.in` (redirect to `anmolkala.in`)
+- The server automatically handles 301 redirects from `www` to non-`www` and forces HTTPS.

@@ -2,13 +2,14 @@
   "version": 2,
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
+  "cleanUrls": true,
   "rewrites": [
     {
       "source": "/api/(.*)",
-      "destination": "/api/index"
+      "destination": "/api"
     },
     {
-      "source": "/(.*)",
+      "source": "/((?!api|products/|products.json|logo.png|robots.txt|sitemap.xml|assets/|favicon.ico).*)",
       "destination": "/index.html"
     }
   ]

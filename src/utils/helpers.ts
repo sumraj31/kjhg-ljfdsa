@@ -40,12 +40,20 @@ export function saveStorage<T>(key: string, value: T): void {
 
 export function handleImageError(e: React.SyntheticEvent<HTMLImageElement, Event>) {
   const target = e.currentTarget;
+  if (target.dataset.fallbackTried === 'true') {
+    target.onerror = null;
+    target.src = '/logo.png';
+    target.alt = 'Image unavailable';
+    return;
+  }
+  target.dataset.fallbackTried = 'true';
+
   const currentSrc = target.getAttribute('src') || '';
-  if (currentSrc.startsWith('/products/') && !currentSrc.startsWith('http')) {
-    target.src = `https://www.anmolkala.in${currentSrc}`;
+  if (currentSrc.startsWith('products/')) {
+    target.src = `/${currentSrc}`;
     return;
   }
   target.onerror = null;
   target.src = '/logo.png';
-  target.alt = 'Image unavailable';
+  target.alt = 'AnmolKala';
 }

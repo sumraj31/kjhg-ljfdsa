@@ -10,9 +10,12 @@
       "category": "Puja Thali",
       "slug": "purple-floral-puja-thali-ak-002",
       "image": "/products/p002.webp",
+      "image_url": "/products/p002.webp",
       "tags": "puja pooja thali aarti पूजा पूजा थाली purple floral puja thali",
       "description": "Round purple puja thali with floral embellishment and multiple diya holders around the edge.",
-      "video_url": ""
+      "video_url": "",
+      "published": true,
+      "availability": "in_stock"
     },
     {
       "id": "AK-003",
@@ -20,9 +23,12 @@
       "category": "Puja Thali",
       "slug": "white-floral-puja-thali-ak-003",
       "image": "/products/p003.webp",
+      "image_url": "/products/p003.webp",
       "tags": "puja pooja thali aarti पूजा पूजा थाली white floral puja thali",
       "description": "Light-coloured round puja thali with floral detailing, gold accents and multiple diya holders.",
-      "video_url": ""
+      "video_url": "",
+      "published": true,
+      "availability": "in_stock"
     },
     {
       "id": "AK-004",
@@ -30,9 +36,12 @@
       "category": "Puja Thali",
       "slug": "teal-gold-puja-thali-ak-004",
       "image": "/products/p004.webp",
+      "image_url": "/products/p004.webp",
       "tags": "puja pooja thali aarti पूजा पूजा थाली teal gold puja thali",
       "description": "Teal-toned round puja thali with gold accents, floral detailing and diya holders.",
-      "video_url": ""
+      "video_url": "",
+      "published": true,
+      "availability": "in_stock"
     },
     {
       "id": "AK-005",
@@ -40,9 +49,12 @@
       "category": "Puja Thali",
       "slug": "pink-floral-puja-thali-ak-005",
       "image": "/products/p005.webp",
+      "image_url": "/products/p005.webp",
       "tags": "puja pooja thali aarti पूजा पूजा थाली pink floral puja thali",
       "description": "Pink-toned round puja thali with floral detailing, gold accents and diya holders.",
-      "video_url": ""
+      "video_url": "",
+      "published": true,
+      "availability": "in_stock"
     },
     {
       "id": "AK-007",
@@ -50,9 +62,12 @@
       "category": "Photo Frames",
       "slug": "decorative-portrait-photo-frame-ak-007",
       "image": "/products/p007.webp",
+      "image_url": "/products/p007.webp",
       "tags": "photo frame photoframe picture frame memory wedding personalized photo frame decorative portrait photo frame",
       "description": "Decorative photo frame featuring a photo presentation with floral and embellished detailing visible in the image.",
-      "video_url": ""
+      "video_url": "",
+      "published": true,
+      "availability": "in_stock"
     },
     {
       "id": "AK-008",
@@ -60,9 +75,12 @@
       "category": "Photo Frames",
       "slug": "floral-memory-photo-frame-gold-detail-ak-008",
       "image": "/products/p008.webp",
+      "image_url": "/products/p008.webp",
       "tags": "photo frame photoframe picture frame memory wedding personalized photo floral memory photo frame gold detail",
       "description": "Decorative photo frame featuring a photo presentation with floral and embellished detailing visible in the image.",
-      "video_url": ""
+      "video_url": "",
+      "published": true,
+      "availability": "in_stock"
     },
     {
       "id": "AK-009",
@@ -70,9 +88,12 @@
       "category": "Photo Frames",
       "slug": "customized-couple-photo-frame-ak-009",
       "image": "/products/p009.webp",
+      "image_url": "/products/p009.webp",
       "tags": "photo frame photoframe picture frame memory wedding personalized photo frame customized couple photo frame",
       "description": "Decorative photo frame featuring a photo presentation with floral and embellished detailing visible in the image.",
-      "video_url": ""
+      "video_url": "",
+      "published": true,
+      "availability": "in_stock"
     },
     {
       "id": "AK-010",
@@ -80,9 +101,12 @@
       "category": "Photo Frames",
       "slug": "gold-floral-photo-frame-ak-010",
       "image": "/products/p010.webp",
+      "image_url": "/products/p010.webp",
       "tags": "photo frame photoframe picture frame memory wedding personalized photo frame gold floral photo frame",
       "description": "Decorative photo frame featuring a photo presentation with floral and embellished detailing visible in the image.",
-      "video_url": ""
+      "video_url": "",
+      "published": true,
+      "availability": "in_stock"
     },
     {
       "id": "AK-011",
@@ -90,9 +114,12 @@
       "category": "Photo Frames",
       "slug": "decorative-gold-floral-photo-frame-ak-011",
       "image": "/products/p011.webp",
+      "image_url": "/products/p011.webp",
       "tags": "photo frame photoframe picture frame memory wedding personalized photo frame decorative gold floral photo frame",
       "description": "Decorative photo frame featuring a photo presentation with floral and embellished detailing visible in the image.",
-      "video_url": ""
+      "video_url": "",
+      "published": true,
+      "availability": "in_stock"
     },
     {
       "id": "AK-012",
@@ -100,9 +127,12 @@
       "category": "Photo Frames",
       "slug": "floral-portrait-photo-frame-ak-012",
       "image": "/products/p012.webp",
+      "image_url": "/products/p012.webp",
       "tags": "photo frame photoframe picture frame memory wedding personalized photo frame floral portrait photo frame",
       "description": "Decorative photo frame featuring a photo presentation with floral and embellished detailing visible in the image.",
-      "video_url": ""
+      "video_url": "",
+      "published": true,
+      "availability": "in_stock"
     },
     {
       "id": "AK-013",
@@ -110,9 +140,12 @@
       "category": "Photo Frames",
       "slug": "multi-photo-collage-frame-ak-013",
       "image": "/products/p013.webp",
+      "image_url": "/products/p013.webp",
       "tags": "photo frame photoframe picture frame memory wedding personalized photo frame multi photo collage frame",
       "description": "Decorative photo frame featuring a photo presentation with floral and embellished detailing visible in the image.",
-      "video_url": ""
+      "video_url": "",
+      "published": true,
+      "availability": "in_stock"
     },
     {
       "id": "AK-014",
@@ -120,9 +153,12 @@
       "category": "Photo Frames",
       "slug": "wedding-photo-frame-ak-014",
       "image": "/products/p014.webp",
+      "image_url": "/products/p014.webp",
       "tags": "photo frame photoframe picture frame memory wedding personalized photo frame wedding photo frame",
       "description": "Decorative photo frame featuring a photo presentation with floral and embellished detailing visible in the image.",
-      "video_url": ""
+      "video_url": "",
+      "published": true,
+      "availability": "in_stock"
     },
     {
       "id": "AK-015",
@@ -130,9 +166,12 @@
       "category": "Photo Frames",
       "slug": "floral-memory-photo-frame-ak-015",
       "image": "/products/p015.webp",
+      "image_url": "/products/p015.webp",
       "tags": "photo frame photoframe picture frame memory wedding personalized photo frame floral memory photo frame",
       "description": "Decorative photo frame featuring a photo presentation with floral and embellished detailing visible in the image.",
-      "video_url": ""
+      "video_url": "",
+      "published": true,
+      "availability": "in_stock"
     },
     {
       "id": "AK-016",
@@ -140,9 +179,12 @@
       "category": "Photo Frames",
       "slug": "couple-photo-frame-ak-016",
       "image": "/products/p016.webp",
+      "image_url": "/products/p016.webp",
       "tags": "photo frame photoframe picture frame memory wedding personalized photo frame couple photo frame",
       "description": "Decorative photo frame featuring a photo presentation with floral and embellished detailing visible in the image.",
-      "video_url": ""
+      "video_url": "",
+      "published": true,
+      "availability": "in_stock"
     },
     {
       "id": "AK-017",
@@ -150,9 +192,12 @@
       "category": "Photo Frames",
       "slug": "decorative-portrait-frame-ak-017",
       "image": "/products/p017.webp",
+      "image_url": "/products/p017.webp",
       "tags": "photo frame photoframe picture frame memory wedding personalized photo frame decorative portrait frame",
       "description": "Decorative photo frame featuring a photo presentation with floral and embellished detailing visible in the image.",
-      "video_url": ""
+      "video_url": "",
+      "published": true,
+      "availability": "in_stock"
     },
     {
       "id": "AK-018",
@@ -160,9 +205,12 @@
       "category": "Photo Frames",
       "slug": "personalized-couple-photo-frame-ak-018",
       "image": "/products/p018.webp",
+      "image_url": "/products/p018.webp",
       "tags": "photo frame photoframe picture frame memory wedding personalized photo frame personalized couple photo frame",
       "description": "Decorative photo frame featuring a photo presentation with floral and embellished detailing visible in the image.",
-      "video_url": ""
+      "video_url": "",
+      "published": true,
+      "availability": "in_stock"
     },
     {
       "id": "AK-019",
@@ -170,9 +218,12 @@
       "category": "Photo Frames",
       "slug": "floral-couple-photo-frame-ak-019",
       "image": "/products/p019.webp",
+      "image_url": "/products/p019.webp",
       "tags": "photo frame photoframe picture frame memory wedding personalized photo frame floral couple photo frame",
       "description": "Decorative photo frame featuring a photo presentation with floral and embellished detailing visible in the image.",
-      "video_url": ""
+      "video_url": "",
+      "published": true,
+      "availability": "in_stock"
     },
     {
       "id": "AK-020",
@@ -180,9 +231,12 @@
       "category": "Photo Frames",
       "slug": "family-photo-frame-ak-020",
       "image": "/products/p020.webp",
+      "image_url": "/products/p020.webp",
       "tags": "photo frame photoframe picture frame memory wedding personalized photo frame family photo frame",
       "description": "Decorative photo frame featuring a photo presentation with floral and embellished detailing visible in the image.",
-      "video_url": ""
+      "video_url": "",
+      "published": true,
+      "availability": "in_stock"
     },
     {
       "id": "AK-021",
@@ -190,9 +244,12 @@
       "category": "Photo Frames",
       "slug": "decorative-photo-collage-ak-021",
       "image": "/products/p021.webp",
+      "image_url": "/products/p021.webp",
       "tags": "photo frame photoframe picture frame memory wedding personalized photo frame decorative photo collage",
       "description": "Decorative photo frame featuring a photo presentation with floral and embellished detailing visible in the image.",
-      "video_url": ""
+      "video_url": "",
+      "published": true,
+      "availability": "in_stock"
     },
     {
       "id": "AK-006",
@@ -200,9 +257,12 @@
       "category": "Photo Frames",
       "slug": "floral-border-photo-frame-ak-006",
       "image": "/products/p006.webp",
+      "image_url": "/products/p006.webp",
       "tags": "photo frame photoframe picture frame memory wedding personalized photo frame floral border photo frame",
       "description": "Decorative photo frame featuring a photo presentation with floral and embellished detailing visible in the image.",
-      "video_url": ""
+      "video_url": "",
+      "published": true,
+      "availability": "in_stock"
     },
     {
       "id": "AK-022",
@@ -210,9 +270,12 @@
       "category": "Photo Frames",
       "slug": "personalized-portrait-frame-ak-022",
       "image": "/products/p022.webp",
+      "image_url": "/products/p022.webp",
       "tags": "photo frame photoframe picture frame memory wedding personalized photo frame personalized portrait frame",
       "description": "Decorative photo frame featuring a photo presentation with floral and embellished detailing visible in the image.",
-      "video_url": ""
+      "video_url": "",
+      "published": true,
+      "availability": "in_stock"
     },
     {
       "id": "AK-023",
@@ -220,9 +283,12 @@
       "category": "Photo Frames",
       "slug": "floral-multi-photo-frame-ak-023",
       "image": "/products/p023.webp",
+      "image_url": "/products/p023.webp",
       "tags": "photo frame photoframe picture frame memory wedding personalized photo frame floral multi photo frame",
       "description": "Decorative photo frame featuring a photo presentation with floral and embellished detailing visible in the image.",
-      "video_url": ""
+      "video_url": "",
+      "published": true,
+      "availability": "in_stock"
     },
     {
       "id": "AK-024",
@@ -230,9 +296,12 @@
       "category": "Photo Frames",
       "slug": "memory-photo-frame-ak-024",
       "image": "/products/p024.webp",
+      "image_url": "/products/p024.webp",
       "tags": "photo frame photoframe picture frame memory wedding personalized photo frame memory photo frame",
       "description": "Decorative photo frame featuring a photo presentation with floral and embellished detailing visible in the image.",
-      "video_url": ""
+      "video_url": "",
+      "published": true,
+      "availability": "in_stock"
     },
     {
       "id": "AK-025",
@@ -240,9 +309,12 @@
       "category": "Photo Frames",
       "slug": "decorative-couple-frame-ak-025",
       "image": "/products/p025.webp",
+      "image_url": "/products/p025.webp",
       "tags": "photo frame photoframe picture frame memory wedding personalized photo frame decorative couple frame",
       "description": "Decorative photo frame featuring a photo presentation with floral and embellished detailing visible in the image.",
-      "video_url": ""
+      "video_url": "",
+      "published": true,
+      "availability": "in_stock"
     },
     {
       "id": "AK-026",
@@ -250,9 +322,12 @@
       "category": "Photo Frames",
       "slug": "personalized-wedding-photo-frame-ak-026",
       "image": "/products/p026.webp",
+      "image_url": "/products/p026.webp",
       "tags": "photo frame photoframe picture frame memory wedding personalized photo frame personalized wedding photo frame",
       "description": "Decorative photo frame featuring a photo presentation with floral and embellished detailing visible in the image.",
-      "video_url": ""
+      "video_url": "",
+      "published": true,
+      "availability": "in_stock"
     },
     {
       "id": "AK-027",
@@ -260,9 +335,12 @@
       "category": "Photo Frames",
       "slug": "family-memory-frame-ak-027",
       "image": "/products/p027.webp",
+      "image_url": "/products/p027.webp",
       "tags": "photo frame photoframe picture frame memory wedding personalized photo frame family memory frame",
       "description": "Decorative photo frame featuring a photo presentation with floral and embellished detailing visible in the image.",
-      "video_url": ""
+      "video_url": "",
+      "published": true,
+      "availability": "in_stock"
     },
     {
       "id": "AK-028",
@@ -270,9 +348,12 @@
       "category": "Photo Frames",
       "slug": "floral-couple-memory-frame-ak-028",
       "image": "/products/p028.webp",
+      "image_url": "/products/p028.webp",
       "tags": "photo frame photoframe picture frame memory wedding personalized photo frame floral couple memory frame",
       "description": "Decorative photo frame featuring a photo presentation with floral and embellished detailing visible in the image.",
-      "video_url": ""
+      "video_url": "",
+      "published": true,
+      "availability": "in_stock"
     },
     {
       "id": "AK-029",
@@ -280,9 +361,12 @@
       "category": "Photo Frames",
       "slug": "decorative-couple-photo-frame-ak-029",
       "image": "/products/p029.webp",
+      "image_url": "/products/p029.webp",
       "tags": "photo frame photoframe picture frame memory wedding personalized photo frame decorative couple photo frame",
       "description": "Decorative photo frame featuring a photo presentation with floral and embellished detailing visible in the image.",
-      "video_url": ""
+      "video_url": "",
+      "published": true,
+      "availability": "in_stock"
     },
     {
       "id": "AK-030",
@@ -290,9 +374,12 @@
       "category": "Photo Frames",
       "slug": "personalized-couple-frame-ak-030",
       "image": "/products/p030.webp",
+      "image_url": "/products/p030.webp",
       "tags": "photo frame photoframe picture frame memory wedding personalized photo frame personalized couple frame",
       "description": "Decorative photo frame featuring a photo presentation with floral and embellished detailing visible in the image.",
-      "video_url": ""
+      "video_url": "",
+      "published": true,
+      "availability": "in_stock"
     },
     {
       "id": "AK-031",
@@ -300,9 +387,12 @@
       "category": "Photo Frames",
       "slug": "illuminated-wedding-photo-frame-ak-031",
       "image": "/products/p031.webp",
+      "image_url": "/products/p031.webp",
       "tags": "photo frame photoframe picture frame memory wedding personalized photo frame illuminated wedding photo frame",
       "description": "Personalized wedding photo display with a central couple photograph, decorative hanging jewellery-style elements, illuminated border and names/date shown in the design.",
-      "video_url": ""
+      "video_url": "",
+      "published": true,
+      "availability": "in_stock"
     },
     {
       "id": "AK-033",
@@ -310,9 +400,12 @@
       "category": "Wall Clocks",
       "slug": "gold-rim-round-wall-clock-ak-033",
       "image": "/products/p033.webp",
+      "image_url": "/products/p033.webp",
       "tags": "wall clock clock clocks ghadi घड़ी gold rim round wall clock",
       "description": "Round decorative wall clock with a visible clock face and distinctive colour or pattern shown in the image.",
-      "video_url": ""
+      "video_url": "",
+      "published": true,
+      "availability": "in_stock"
     },
     {
       "id": "AK-034",
@@ -320,9 +413,12 @@
       "category": "Wall Clocks",
       "slug": "marble-pattern-wall-clock-ak-034",
       "image": "/products/p034.webp",
+      "image_url": "/products/p034.webp",
       "tags": "wall clock clock clocks ghadi घड़ी marble pattern wall clock",
       "description": "Round decorative wall clock with a visible clock face and distinctive colour or pattern shown in the image.",
-      "video_url": ""
+      "video_url": "",
+      "published": true,
+      "availability": "in_stock"
     },
     {
       "id": "AK-035",
@@ -330,9 +426,12 @@
       "category": "Wall Clocks",
       "slug": "grey-marble-wall-clock-ak-035",
       "image": "/products/p035.webp",
+      "image_url": "/products/p035.webp",
       "tags": "wall clock clock clocks ghadi घड़ी grey marble wall clock",
       "description": "Round decorative wall clock with a visible clock face and distinctive colour or pattern shown in the image.",
-      "video_url": ""
+      "video_url": "",
+      "published": true,
+      "availability": "in_stock"
     },
     {
       "id": "AK-036",
@@ -340,9 +439,12 @@
       "category": "Wall Clocks",
       "slug": "gold-ring-abstract-wall-clock-ak-036",
       "image": "/products/p036.webp",
+      "image_url": "/products/p036.webp",
       "tags": "wall clock clock clocks ghadi घड़ी gold ring abstract wall clock",
       "description": "Round decorative wall clock with a visible clock face and distinctive colour or pattern shown in the image.",
-      "video_url": ""
+      "video_url": "",
+      "published": true,
+      "availability": "in_stock"
     },
     {
       "id": "AK-037",
@@ -350,9 +452,12 @@
       "category": "Wall Clocks",
       "slug": "geometric-square-wall-clock-ak-037",
       "image": "/products/p037.webp",
+      "image_url": "/products/p037.webp",
       "tags": "wall clock clock clocks ghadi घड़ी geometric square wall clock",
       "description": "Round decorative wall clock with a visible clock face and distinctive colour or pattern shown in the image.",
-      "video_url": ""
+      "video_url": "",
+      "published": true,
+      "availability": "in_stock"
     },
     {
       "id": "AK-038",
@@ -360,9 +465,12 @@
       "category": "Wall Clocks",
       "slug": "white-sculpted-wall-clock-ak-038",
       "image": "/products/p038.webp",
+      "image_url": "/products/p038.webp",
       "tags": "wall clock clock clocks ghadi घड़ी white sculpted wall clock",
       "description": "Round decorative wall clock with a visible clock face and distinctive colour or pattern shown in the image.",
-      "video_url": ""
+      "video_url": "",
+      "published": true,
+      "availability": "in_stock"
     },
     {
       "id": "AK-039",
@@ -370,9 +478,12 @@
       "category": "Wall Clocks",
       "slug": "black-gold-wall-clock-ak-039",
       "image": "/products/p039.webp",
+      "image_url": "/products/p039.webp",
       "tags": "wall clock clock clocks ghadi घड़ी black gold wall clock",
       "description": "Round decorative wall clock with a visible clock face and distinctive colour or pattern shown in the image.",
-      "video_url": ""
+      "video_url": "",
+      "published": true,
+      "availability": "in_stock"
     },
     {
       "id": "AK-040",
@@ -380,9 +491,12 @@
       "category": "Wall Clocks",
       "slug": "white-floral-wall-clock-ak-040",
       "image": "/products/p040.webp",
+      "image_url": "/products/p040.webp",
       "tags": "wall clock clock clocks ghadi घड़ी white floral wall clock",
       "description": "Round decorative wall clock with a visible clock face and distinctive colour or pattern shown in the image.",
-      "video_url": ""
+      "video_url": "",
+      "published": true,
+      "availability": "in_stock"
     },
     {
       "id": "AK-041",
@@ -390,9 +504,12 @@
       "category": "Wall Clocks",
       "slug": "gold-accent-wall-clock-ak-041",
       "image": "/products/p041.webp",
+      "image_url": "/products/p041.webp",
       "tags": "wall clock clock clocks ghadi घड़ी gold accent wall clock",
       "description": "Round decorative wall clock with a visible clock face and distinctive colour or pattern shown in the image.",
-      "video_url": ""
+      "video_url": "",
+      "published": true,
+      "availability": "in_stock"
     },
     {
       "id": "AK-042",
@@ -400,9 +517,12 @@
       "category": "Wall Clocks",
       "slug": "ornate-marble-wall-clock-ak-042",
       "image": "/products/p042.webp",
+      "image_url": "/products/p042.webp",
       "tags": "wall clock clock clocks ghadi घड़ी ornate marble wall clock",
       "description": "Round decorative wall clock with a visible clock face and distinctive colour or pattern shown in the image.",
-      "video_url": ""
+      "video_url": "",
+      "published": true,
+      "availability": "in_stock"
     },
     {
       "id": "AK-043",
@@ -410,9 +530,12 @@
       "category": "Wall Clocks",
       "slug": "grey-gold-wall-clock-ak-043",
       "image": "/products/p043.webp",
+      "image_url": "/products/p043.webp",
       "tags": "wall clock clock clocks ghadi घड़ी grey gold wall clock",
       "description": "Round decorative wall clock with a visible clock face and distinctive colour or pattern shown in the image.",
-      "video_url": ""
+      "video_url": "",
+      "published": true,
+      "availability": "in_stock"
     },
     {
       "id": "AK-044",
@@ -420,9 +543,12 @@
       "category": "Wall Clocks",
       "slug": "grey-gold-rim-wall-clock-ak-044",
       "image": "/products/p044.webp",
+      "image_url": "/products/p044.webp",
       "tags": "wall clock clock clocks ghadi घड़ी grey gold rim wall clock",
       "description": "Round decorative wall clock with a visible clock face and distinctive colour or pattern shown in the image.",
-      "video_url": ""
+      "video_url": "",
+      "published": true,
+      "availability": "in_stock"
     },
     {
       "id": "AK-045",
@@ -430,9 +556,12 @@
       "category": "Wall Clocks",
       "slug": "handmade-style-grey-wall-clock-ak-045",
       "image": "/products/p045.webp",
+      "image_url": "/products/p045.webp",
       "tags": "wall clock clock clocks ghadi घड़ी handmade style grey wall clock",
       "description": "Round decorative wall clock with a visible clock face and distinctive colour or pattern shown in the image.",
-      "video_url": ""
+      "video_url": "",
+      "published": true,
+      "availability": "in_stock"
     },
     {
       "id": "AK-046",
@@ -440,9 +569,12 @@
       "category": "Wall Clocks",
       "slug": "black-gold-pattern-wall-clock-ak-046",
       "image": "/products/p046.webp",
+      "image_url": "/products/p046.webp",
       "tags": "wall clock clock clocks ghadi घड़ी black gold pattern wall clock",
       "description": "Round decorative wall clock with a visible clock face and distinctive colour or pattern shown in the image.",
-      "video_url": ""
+      "video_url": "",
+      "published": true,
+      "availability": "in_stock"
     },
     {
       "id": "AK-047",
@@ -450,9 +582,12 @@
       "category": "Wall Clocks",
       "slug": "white-leaf-design-wall-clock-ak-047",
       "image": "/products/p047.webp",
+      "image_url": "/products/p047.webp",
       "tags": "wall clock clock clocks ghadi घड़ी white leaf design wall clock",
       "description": "Round decorative wall clock with a visible clock face and distinctive colour or pattern shown in the image.",
-      "video_url": ""
+      "video_url": "",
+      "published": true,
+      "availability": "in_stock"
     },
     {
       "id": "AK-048",
@@ -460,9 +595,12 @@
       "category": "Wall Clocks",
       "slug": "grey-textured-wall-clock-ak-048",
       "image": "/products/p048.webp",
+      "image_url": "/products/p048.webp",
       "tags": "wall clock clock clocks ghadi घड़ी grey textured wall clock",
       "description": "Round decorative wall clock with a visible clock face and distinctive colour or pattern shown in the image.",
-      "video_url": ""
+      "video_url": "",
+      "published": true,
+      "availability": "in_stock"
     },
     {
       "id": "AK-049",
@@ -470,9 +608,12 @@
       "category": "Wall Clocks",
       "slug": "blue-floral-wall-clock-ak-049",
       "image": "/products/p049.webp",
+      "image_url": "/products/p049.webp",
       "tags": "wall clock clock clocks ghadi घड़ी blue floral wall clock",
       "description": "Round decorative wall clock with a visible clock face and distinctive colour or pattern shown in the image.",
-      "video_url": ""
+      "video_url": "",
+      "published": true,
+      "availability": "in_stock"
     },
     {
       "id": "AK-050",
@@ -480,9 +621,12 @@
       "category": "Wall Clocks",
       "slug": "teal-gold-decorative-wall-clock-ak-050",
       "image": "/products/p050.webp",
+      "image_url": "/products/p050.webp",
       "tags": "wall clock clock clocks ghadi घड़ी teal gold decorative wall clock",
       "description": "Round decorative wall clock with a visible clock face and distinctive colour or pattern shown in the image.",
-      "video_url": ""
+      "video_url": "",
+      "published": true,
+      "availability": "in_stock"
     },
     {
       "id": "AK-051",
@@ -490,9 +634,12 @@
       "category": "Wall Clocks",
       "slug": "white-grey-abstract-wall-clock-ak-051",
       "image": "/products/p051.webp",
+      "image_url": "/products/p051.webp",
       "tags": "wall clock clock clocks ghadi घड़ी white grey abstract wall clock",
       "description": "Round decorative wall clock with a visible clock face and distinctive colour or pattern shown in the image.",
-      "video_url": ""
+      "video_url": "",
+      "published": true,
+      "availability": "in_stock"
     },
     {
       "id": "AK-052",
@@ -500,9 +647,12 @@
       "category": "Wall Clocks",
       "slug": "black-white-abstract-wall-clock-ak-052",
       "image": "/products/p052.webp",
+      "image_url": "/products/p052.webp",
       "tags": "wall clock clock clocks ghadi घड़ी black white abstract wall clock",
       "description": "Round decorative wall clock with a visible clock face and distinctive colour or pattern shown in the image.",
-      "video_url": ""
+      "video_url": "",
+      "published": true,
+      "availability": "in_stock"
     },
     {
       "id": "AK-053",
@@ -510,9 +660,12 @@
       "category": "Wall Clocks",
       "slug": "green-marble-pattern-wall-clock-ak-053",
       "image": "/products/p053.webp",
+      "image_url": "/products/p053.webp",
       "tags": "wall clock clock clocks ghadi घड़ी green marble pattern wall clock",
       "description": "Round decorative wall clock with a visible clock face and distinctive colour or pattern shown in the image.",
-      "video_url": ""
+      "video_url": "",
+      "published": true,
+      "availability": "in_stock"
     },
     {
       "id": "AK-054",
@@ -520,9 +673,12 @@
       "category": "Wall Clocks",
       "slug": "floral-gold-rim-wall-clock-ak-054",
       "image": "/products/p054.webp",
+      "image_url": "/products/p054.webp",
       "tags": "wall clock clock clocks ghadi घड़ी floral gold rim wall clock",
       "description": "Round decorative wall clock with a visible clock face and distinctive colour or pattern shown in the image.",
-      "video_url": ""
+      "video_url": "",
+      "published": true,
+      "availability": "in_stock"
     },
     {
       "id": "AK-055",
@@ -530,9 +686,12 @@
       "category": "Wall Clocks",
       "slug": "black-white-landscape-wall-clock-ak-055",
       "image": "/products/p055.webp",
+      "image_url": "/products/p055.webp",
       "tags": "wall clock clock clocks ghadi घड़ी black white landscape wall clock",
       "description": "Round decorative wall clock with a visible clock face and distinctive colour or pattern shown in the image.",
-      "video_url": ""
+      "video_url": "",
+      "published": true,
+      "availability": "in_stock"
     },
     {
       "id": "AK-056",
@@ -540,9 +699,12 @@
       "category": "Wall Clocks",
       "slug": "personalized-photo-wall-clock-ak-056",
       "image": "/products/p056.webp",
+      "image_url": "/products/p056.webp",
       "tags": "wall clock clock clocks ghadi घड़ी personalized photo wall clock",
       "description": "Round decorative wall clock with a visible clock face and distinctive colour or pattern shown in the image.",
-      "video_url": ""
+      "video_url": "",
+      "published": true,
+      "availability": "in_stock"
     },
     {
       "id": "AK-057",
@@ -550,9 +712,12 @@
       "category": "Wall Clocks",
       "slug": "white-grey-marble-pattern-wall-clock-ak-057",
       "image": "/products/p057.webp",
+      "image_url": "/products/p057.webp",
       "tags": "wall clock clock clocks ghadi घड़ी white grey marble pattern wall clock",
       "description": "Round decorative wall clock with a visible clock face and distinctive colour or pattern shown in the image.",
-      "video_url": ""
+      "video_url": "",
+      "published": true,
+      "availability": "in_stock"
     },
     {
       "id": "AK-058",
@@ -560,9 +725,12 @@
       "category": "Wall Clocks",
       "slug": "decorative-wall-clock-on-stand-ak-058",
       "image": "/products/p058.webp",
+      "image_url": "/products/p058.webp",
       "tags": "wall clock clock clocks ghadi घड़ी decorative wall clock on stand",
       "description": "Round decorative wall clock with a visible clock face and distinctive colour or pattern shown in the image.",
-      "video_url": ""
+      "video_url": "",
+      "published": true,
+      "availability": "in_stock"
     },
     {
       "id": "AK-059",
@@ -570,9 +738,12 @@
       "category": "Wall Clocks",
       "slug": "white-grey-round-wall-clock-ak-059",
       "image": "/products/p059.webp",
+      "image_url": "/products/p059.webp",
       "tags": "wall clock clock clocks ghadi घड़ी white grey round wall clock",
       "description": "Round decorative wall clock with a visible clock face and distinctive colour or pattern shown in the image.",
-      "video_url": ""
+      "video_url": "",
+      "published": true,
+      "availability": "in_stock"
     },
     {
       "id": "AK-060",
@@ -580,9 +751,12 @@
       "category": "Wall Clocks",
       "slug": "grey-floral-accent-wall-clock-ak-060",
       "image": "/products/p060.webp",
+      "image_url": "/products/p060.webp",
       "tags": "wall clock clock clocks ghadi घड़ी grey floral accent wall clock",
       "description": "Round decorative wall clock with a visible clock face and distinctive colour or pattern shown in the image.",
-      "video_url": ""
+      "video_url": "",
+      "published": true,
+      "availability": "in_stock"
     },
     {
       "id": "AK-062",
@@ -590,9 +764,12 @@
       "category": "Tray Sets",
       "slug": "long-decorative-tray-ak-062",
       "image": "/products/p062.webp",
+      "image_url": "/products/p062.webp",
       "tags": "tray tray set serving decorative long decorative tray",
       "description": "Decorative tray or tray set shown with its visible shape, pattern and embellishment.",
-      "video_url": ""
+      "video_url": "",
+      "published": true,
+      "availability": "in_stock"
     },
     {
       "id": "AK-063",
@@ -600,9 +777,12 @@
       "category": "Tray Sets",
       "slug": "multi-piece-decorative-tray-set-ak-063",
       "image": "/products/p063.webp",
+      "image_url": "/products/p063.webp",
       "tags": "tray tray set serving decorative multi piece decorative tray set",
       "description": "Decorative tray or tray set shown with its visible shape, pattern and embellishment.",
-      "video_url": ""
+      "video_url": "",
+      "published": true,
+      "availability": "in_stock"
     },
     {
       "id": "AK-064",
@@ -610,9 +790,12 @@
       "category": "Tray Sets",
       "slug": "black-floral-tray-ak-064",
       "image": "/products/p064.webp",
+      "image_url": "/products/p064.webp",
       "tags": "tray tray set serving decorative black floral tray",
       "description": "Decorative tray or tray set shown with its visible shape, pattern and embellishment.",
-      "video_url": ""
+      "video_url": "",
+      "published": true,
+      "availability": "in_stock"
     },
     {
       "id": "AK-065",
@@ -620,9 +803,12 @@
       "category": "Tray Sets",
       "slug": "textured-decorative-tray-ak-065",
       "image": "/products/p065.webp",
+      "image_url": "/products/p065.webp",
       "tags": "tray tray set serving decorative textured decorative tray",
       "description": "Decorative tray or tray set shown with its visible shape, pattern and embellishment.",
-      "video_url": ""
+      "video_url": "",
+      "published": true,
+      "availability": "in_stock"
     },
     {
       "id": "AK-066",
@@ -630,9 +816,12 @@
       "category": "Tray Sets",
       "slug": "floral-rectangular-tray-ak-066",
       "image": "/products/p066.webp",
+      "image_url": "/products/p066.webp",
       "tags": "tray tray set serving decorative floral rectangular tray",
       "description": "Decorative tray or tray set shown with its visible shape, pattern and embellishment.",
-      "video_url": ""
+      "video_url": "",
+      "published": true,
+      "availability": "in_stock"
     },
     {
       "id": "AK-067",
@@ -640,9 +829,12 @@
       "category": "Tray Sets",
       "slug": "floral-serving-tray-ak-067",
       "image": "/products/p067.webp",
+      "image_url": "/products/p067.webp",
       "tags": "tray tray set serving decorative floral serving tray",
       "description": "Decorative tray or tray set shown with its visible shape, pattern and embellishment.",
-      "video_url": ""
+      "video_url": "",
+      "published": true,
+      "availability": "in_stock"
     },
     {
       "id": "AK-068",
@@ -650,9 +842,12 @@
       "category": "Tray Sets",
       "slug": "floral-decorative-tray-set-ak-068",
       "image": "/products/p068.webp",
+      "image_url": "/products/p068.webp",
       "tags": "tray tray set serving decorative floral decorative tray set",
       "description": "Decorative tray or tray set shown with its visible shape, pattern and embellishment.",
-      "video_url": ""
+      "video_url": "",
+      "published": true,
+      "availability": "in_stock"
     },
     {
       "id": "AK-069",
@@ -660,9 +855,12 @@
       "category": "Tray Sets",
       "slug": "decorative-tray-with-raised-border-ak-069",
       "image": "/products/p069.webp",
+      "image_url": "/products/p069.webp",
       "tags": "tray tray set serving decorative decorative tray with raised border",
       "description": "Decorative tray or tray set shown with its visible shape, pattern and embellishment.",
-      "video_url": ""
+      "video_url": "",
+      "published": true,
+      "availability": "in_stock"
     },
     {
       "id": "AK-070",
@@ -670,9 +868,12 @@
       "category": "Tray Sets",
       "slug": "grey-floral-tray-ak-070",
       "image": "/products/p070.webp",
+      "image_url": "/products/p070.webp",
       "tags": "tray tray set serving decorative grey floral tray",
       "description": "Decorative tray or tray set shown with its visible shape, pattern and embellishment.",
-      "video_url": ""
+      "video_url": "",
+      "published": true,
+      "availability": "in_stock"
     },
     {
       "id": "AK-071",
@@ -680,9 +881,12 @@
       "category": "Tray Sets",
       "slug": "round-floral-tray-ak-071",
       "image": "/products/p071.webp",
+      "image_url": "/products/p071.webp",
       "tags": "tray tray set serving decorative round floral tray",
       "description": "Decorative tray or tray set shown with its visible shape, pattern and embellishment.",
-      "video_url": ""
+      "video_url": "",
+      "published": true,
+      "availability": "in_stock"
     },
     {
       "id": "AK-072",
@@ -690,9 +894,12 @@
       "category": "Jewellery",
       "slug": "pink-floral-bracelet-set-ak-072",
       "image": "/products/p072.webp",
+      "image_url": "/products/p072.webp",
       "tags": "jewellery jewelry earring earrings bracelet bangle pendant necklace set pink floral bracelet set",
       "description": "Jewellery piece or set shown in the image, with its visible shape, colours and decorative design.",
-      "video_url": ""
+      "video_url": "",
+      "published": true,
+      "availability": "in_stock"
     },
     {
       "id": "AK-074",
@@ -700,9 +907,12 @@
       "category": "Jewellery",
       "slug": "black-floral-drop-earrings-ak-074",
       "image": "/products/p074.webp",
+      "image_url": "/products/p074.webp",
       "tags": "jewellery jewelry earring earrings bracelet bangle pendant necklace set black floral drop earrings",
       "description": "Jewellery piece or set shown in the image, with its visible shape, colours and decorative design.",
-      "video_url": ""
+      "video_url": "",
+      "published": true,
+      "availability": "in_stock"
     },
     {
       "id": "AK-075",
@@ -710,9 +920,12 @@
       "category": "Jewellery",
       "slug": "yellow-petal-earrings-ak-075",
       "image": "/products/p075.webp",
+      "image_url": "/products/p075.webp",
       "tags": "jewellery jewelry earring earrings bracelet bangle pendant necklace set yellow petal earrings",
       "description": "Jewellery piece or set shown in the image, with its visible shape, colours and decorative design.",
-      "video_url": ""
+      "video_url": "",
+      "published": true,
+      "availability": "in_stock"
     },
     {
       "id": "AK-076",
@@ -720,9 +933,12 @@
       "category": "Jewellery",
       "slug": "heart-pendant-set-ak-076",
       "image": "/products/p076.webp",
+      "image_url": "/products/p076.webp",
       "tags": "jewellery jewelry earring earrings bracelet bangle pendant necklace set heart pendant set",
       "description": "Jewellery piece or set shown in the image, with its visible shape, colours and decorative design.",
-      "video_url": ""
+      "video_url": "",
+      "published": true,
+      "availability": "in_stock"
     },
     {
       "id": "AK-077",
@@ -730,9 +946,12 @@
       "category": "Jewellery",
       "slug": "green-petal-drop-earrings-ak-077",
       "image": "/products/p077.webp",
+      "image_url": "/products/p077.webp",
       "tags": "jewellery jewelry earring earrings bracelet bangle pendant necklace set green petal drop earrings",
       "description": "Jewellery piece or set shown in the image, with its visible shape, colours and decorative design.",
-      "video_url": ""
+      "video_url": "",
+      "published": true,
+      "availability": "in_stock"
     },
     {
       "id": "AK-078",
@@ -740,9 +959,12 @@
       "category": "Jewellery",
       "slug": "purple-heart-bracelet-ak-078",
       "image": "/products/p078.webp",
+      "image_url": "/products/p078.webp",
       "tags": "jewellery jewelry earring earrings bracelet bangle pendant necklace set purple heart bracelet",
       "description": "Jewellery piece or set shown in the image, with its visible shape, colours and decorative design.",
-      "video_url": ""
+      "video_url": "",
+      "published": true,
+      "availability": "in_stock"
     },
     {
       "id": "AK-079",
@@ -750,9 +972,12 @@
       "category": "Jewellery",
       "slug": "blue-green-bracelet-set-ak-079",
       "image": "/products/p079.webp",
+      "image_url": "/products/p079.webp",
       "tags": "jewellery jewelry earring earrings bracelet bangle pendant necklace set blue green bracelet set",
       "description": "Jewellery piece or set shown in the image, with its visible shape, colours and decorative design.",
-      "video_url": ""
+      "video_url": "",
+      "published": true,
+      "availability": "in_stock"
     },
     {
       "id": "AK-080",
@@ -760,9 +985,12 @@
       "category": "Jewellery",
       "slug": "maroon-bangle-set-ak-080",
       "image": "/products/p080.webp",
+      "image_url": "/products/p080.webp",
       "tags": "jewellery jewelry earring earrings bracelet bangle pendant necklace set maroon bangle set",
       "description": "Jewellery piece or set shown in the image, with its visible shape, colours and decorative design.",
-      "video_url": ""
+      "video_url": "",
+      "published": true,
+      "availability": "in_stock"
     },
     {
       "id": "AK-081",
@@ -770,9 +998,12 @@
       "category": "Jewellery",
       "slug": "round-charm-bracelet-set-ak-081",
       "image": "/products/p081.webp",
+      "image_url": "/products/p081.webp",
       "tags": "jewellery jewelry earring earrings bracelet bangle pendant necklace set round charm bracelet set",
       "description": "Jewellery piece or set shown in the image, with its visible shape, colours and decorative design.",
-      "video_url": ""
+      "video_url": "",
+      "published": true,
+      "availability": "in_stock"
     },
     {
       "id": "AK-082",
@@ -780,9 +1011,12 @@
       "category": "Jewellery",
       "slug": "floral-statement-earrings-ak-082",
       "image": "/products/p082.webp",
+      "image_url": "/products/p082.webp",
       "tags": "jewellery jewelry earring earrings bracelet bangle pendant necklace set floral statement earrings",
       "description": "Jewellery piece or set shown in the image, with its visible shape, colours and decorative design.",
-      "video_url": ""
+      "video_url": "",
+      "published": true,
+      "availability": "in_stock"
     },
     {
       "id": "AK-083",
@@ -790,9 +1024,12 @@
       "category": "Jewellery",
       "slug": "pink-drop-earrings-ak-083",
       "image": "/products/p083.webp",
+      "image_url": "/products/p083.webp",
       "tags": "jewellery jewelry earring earrings bracelet bangle pendant necklace set pink drop earrings",
       "description": "Jewellery piece or set shown in the image, with its visible shape, colours and decorative design.",
-      "video_url": ""
+      "video_url": "",
+      "published": true,
+      "availability": "in_stock"
     },
     {
       "id": "AK-084",
@@ -800,9 +1037,12 @@
       "category": "Jewellery",
       "slug": "black-gold-statement-earrings-ak-084",
       "image": "/products/p084.webp",
+      "image_url": "/products/p084.webp",
       "tags": "jewellery jewelry earring earrings bracelet bangle pendant necklace set black gold statement earrings",
       "description": "Jewellery piece or set shown in the image, with its visible shape, colours and decorative design.",
-      "video_url": ""
+      "video_url": "",
+      "published": true,
+      "availability": "in_stock"
     },
     {
       "id": "AK-085",
@@ -810,9 +1050,12 @@
       "category": "Jewellery",
       "slug": "blue-floral-hoop-earrings-ak-085",
       "image": "/products/p085.webp",
+      "image_url": "/products/p085.webp",
       "tags": "jewellery jewelry earring earrings bracelet bangle pendant necklace set blue floral hoop earrings",
       "description": "Jewellery piece or set shown in the image, with its visible shape, colours and decorative design.",
-      "video_url": ""
+      "video_url": "",
+      "published": true,
+      "availability": "in_stock"
     },
     {
       "id": "AK-086",
@@ -820,9 +1063,12 @@
       "category": "Jewellery",
       "slug": "round-floral-earrings-ak-086",
       "image": "/products/p086.webp",
+      "image_url": "/products/p086.webp",
       "tags": "jewellery jewelry earring earrings bracelet bangle pendant necklace set round floral earrings",
       "description": "Jewellery piece or set shown in the image, with its visible shape, colours and decorative design.",
-      "video_url": ""
+      "video_url": "",
+      "published": true,
+      "availability": "in_stock"
     },
     {
       "id": "AK-087",
@@ -830,9 +1076,12 @@
       "category": "Jewellery",
       "slug": "geometric-floral-earrings-ak-087",
       "image": "/products/p087.webp",
+      "image_url": "/products/p087.webp",
       "tags": "jewellery jewelry earring earrings bracelet bangle pendant necklace set geometric floral earrings",
       "description": "Jewellery piece or set shown in the image, with its visible shape, colours and decorative design.",
-      "video_url": ""
+      "video_url": "",
+      "published": true,
+      "availability": "in_stock"
     },
     {
       "id": "AK-088",
@@ -840,9 +1089,12 @@
       "category": "Jewellery",
       "slug": "assorted-earrings-collection-ak-088",
       "image": "/products/p088.webp",
+      "image_url": "/products/p088.webp",
       "tags": "jewellery jewelry earring earrings bracelet bangle pendant necklace set assorted earrings collection",
       "description": "Jewellery piece or set shown in the image, with its visible shape, colours and decorative design.",
-      "video_url": ""
+      "video_url": "",
+      "published": true,
+      "availability": "in_stock"
     },
     {
       "id": "AK-089",
@@ -850,9 +1102,12 @@
       "category": "Jewellery",
       "slug": "green-petal-earrings-ak-089",
       "image": "/products/p089.webp",
+      "image_url": "/products/p089.webp",
       "tags": "jewellery jewelry earring earrings bracelet bangle pendant necklace set green petal earrings",
       "description": "Jewellery piece or set shown in the image, with its visible shape, colours and decorative design.",
-      "video_url": ""
+      "video_url": "",
+      "published": true,
+      "availability": "in_stock"
     },
     {
       "id": "AK-090",
@@ -860,9 +1115,12 @@
       "category": "Jewellery",
       "slug": "pink-floral-statement-earrings-ak-090",
       "image": "/products/p090.webp",
+      "image_url": "/products/p090.webp",
       "tags": "jewellery jewelry earring earrings bracelet bangle pendant necklace set pink floral statement earrings",
       "description": "Jewellery piece or set shown in the image, with its visible shape, colours and decorative design.",
-      "video_url": ""
+      "video_url": "",
+      "published": true,
+      "availability": "in_stock"
     },
     {
       "id": "AK-091",
@@ -870,9 +1128,12 @@
       "category": "Jewellery",
       "slug": "turquoise-heart-pendant-ak-091",
       "image": "/products/p091.webp",
+      "image_url": "/products/p091.webp",
       "tags": "jewellery jewelry earring earrings bracelet bangle pendant necklace set turquoise heart pendant",
       "description": "Jewellery piece or set shown in the image, with its visible shape, colours and decorative design.",
-      "video_url": ""
+      "video_url": "",
+      "published": true,
+      "availability": "in_stock"
     },
     {
       "id": "AK-092",
@@ -880,9 +1141,12 @@
       "category": "Jewellery",
       "slug": "yellow-floral-earring-set-ak-092",
       "image": "/products/p092.webp",
+      "image_url": "/products/p092.webp",
       "tags": "jewellery jewelry earring earrings bracelet bangle pendant necklace set yellow floral earring set",
       "description": "Jewellery piece or set shown in the image, with its visible shape, colours and decorative design.",
-      "video_url": ""
+      "video_url": "",
+      "published": true,
+      "availability": "in_stock"
     },
     {
       "id": "AK-093",
@@ -890,9 +1154,12 @@
       "category": "Jewellery",
       "slug": "amber-floral-earrings-ak-093",
       "image": "/products/p093.webp",
+      "image_url": "/products/p093.webp",
       "tags": "jewellery jewelry earring earrings bracelet bangle pendant necklace set amber floral earrings",
       "description": "Jewellery piece or set shown in the image, with its visible shape, colours and decorative design.",
-      "video_url": ""
+      "video_url": "",
+      "published": true,
+      "availability": "in_stock"
     },
     {
       "id": "AK-094",
@@ -900,9 +1167,12 @@
       "category": "Jewellery",
       "slug": "purple-floral-jewellery-set-ak-094",
       "image": "/products/p094.webp",
+      "image_url": "/products/p094.webp",
       "tags": "jewellery jewelry earring earrings bracelet bangle pendant necklace set purple floral jewellery set",
       "description": "Jewellery piece or set shown in the image, with its visible shape, colours and decorative design.",
-      "video_url": ""
+      "video_url": "",
+      "published": true,
+      "availability": "in_stock"
     },
     {
       "id": "AK-095",
@@ -910,9 +1180,12 @@
       "category": "Jewellery",
       "slug": "blue-pendant-necklace-set-ak-095",
       "image": "/products/p095.webp",
+      "image_url": "/products/p095.webp",
       "tags": "jewellery jewelry earring earrings bracelet bangle pendant necklace set blue pendant necklace set",
       "description": "Jewellery piece or set shown in the image, with its visible shape, colours and decorative design.",
-      "video_url": ""
+      "video_url": "",
+      "published": true,
+      "availability": "in_stock"
     },
     {
       "id": "AK-098",
@@ -920,9 +1193,12 @@
       "category": "Jewellery",
       "slug": "multicolour-bracelet-set-mixed-charms-ak-098",
       "image": "/products/p098.webp",
+      "image_url": "/products/p098.webp",
       "tags": "jewellery jewelry earring earrings bracelet bangle pendant necklace set multicolour bracelet set   mixed charms",
       "description": "Jewellery piece or set shown in the image, with its visible shape, colours and decorative design.",
-      "video_url": ""
+      "video_url": "",
+      "published": true,
+      "availability": "in_stock"
     },
     {
       "id": "AK-099",
@@ -930,9 +1206,12 @@
       "category": "Jewellery",
       "slug": "floral-charm-bracelet-round-petals-ak-099",
       "image": "/products/p099.webp",
+      "image_url": "/products/p099.webp",
       "tags": "jewellery jewelry earring earrings bracelet bangle pendant necklace set floral charm bracelet   round petals",
       "description": "Jewellery piece or set shown in the image, with its visible shape, colours and decorative design.",
-      "video_url": ""
+      "video_url": "",
+      "published": true,
+      "availability": "in_stock"
     },
     {
       "id": "AK-100",
@@ -940,9 +1219,12 @@
       "category": "Jewellery",
       "slug": "floral-bangle-ak-100",
       "image": "/products/p100.webp",
+      "image_url": "/products/p100.webp",
       "tags": "jewellery jewelry earring earrings bracelet bangle pendant necklace set floral bangle",
       "description": "Jewellery piece or set shown in the image, with its visible shape, colours and decorative design.",
-      "video_url": ""
+      "video_url": "",
+      "published": true,
+      "availability": "in_stock"
     },
     {
       "id": "AK-101",
@@ -950,9 +1232,12 @@
       "category": "Jewellery",
       "slug": "floral-bangle-set-ak-101",
       "image": "/products/p101.webp",
+      "image_url": "/products/p101.webp",
       "tags": "jewellery jewelry earring earrings bracelet bangle pendant necklace set floral bangle set",
       "description": "Jewellery piece or set shown in the image, with its visible shape, colours and decorative design.",
-      "video_url": ""
+      "video_url": "",
+      "published": true,
+      "availability": "in_stock"
     },
     {
       "id": "AK-102",
@@ -960,9 +1245,12 @@
       "category": "Jewellery",
       "slug": "purple-drop-earrings-ak-102",
       "image": "/products/p102.webp",
+      "image_url": "/products/p102.webp",
       "tags": "jewellery jewelry earring earrings bracelet bangle pendant necklace set purple drop earrings",
       "description": "Jewellery piece or set shown in the image, with its visible shape, colours and decorative design.",
-      "video_url": ""
+      "video_url": "",
+      "published": true,
+      "availability": "in_stock"
     },
     {
       "id": "AK-103",
@@ -970,9 +1258,12 @@
       "category": "Jewellery",
       "slug": "floral-bracelet-ak-103",
       "image": "/products/p103.webp",
+      "image_url": "/products/p103.webp",
       "tags": "jewellery jewelry earring earrings bracelet bangle pendant necklace set floral bracelet",
       "description": "Jewellery piece or set shown in the image, with its visible shape, colours and decorative design.",
-      "video_url": ""
+      "video_url": "",
+      "published": true,
+      "availability": "in_stock"
     },
     {
       "id": "AK-104",
@@ -980,9 +1271,12 @@
       "category": "Jewellery",
       "slug": "pink-bangle-set-ak-104",
       "image": "/products/p104.webp",
+      "image_url": "/products/p104.webp",
       "tags": "jewellery jewelry earring earrings bracelet bangle pendant necklace set pink bangle set",
       "description": "Jewellery piece or set shown in the image, with its visible shape, colours and decorative design.",
-      "video_url": ""
+      "video_url": "",
+      "published": true,
+      "availability": "in_stock"
     },
     {
       "id": "AK-105",
@@ -990,9 +1284,12 @@
       "category": "Jewellery",
       "slug": "blue-floral-bangle-ak-105",
       "image": "/products/p105.webp",
+      "image_url": "/products/p105.webp",
       "tags": "jewellery jewelry earring earrings bracelet bangle pendant necklace set blue floral bangle",
       "description": "Jewellery piece or set shown in the image, with its visible shape, colours and decorative design.",
-      "video_url": ""
+      "video_url": "",
+      "published": true,
+      "availability": "in_stock"
     },
     {
       "id": "AK-106",
@@ -1000,9 +1297,12 @@
       "category": "Jewellery",
       "slug": "heart-jewellery-set-ak-106",
       "image": "/products/p106.webp",
+      "image_url": "/products/p106.webp",
       "tags": "jewellery jewelry earring earrings bracelet bangle pendant necklace set heart jewellery set",
       "description": "Jewellery piece or set shown in the image, with its visible shape, colours and decorative design.",
-      "video_url": ""
+      "video_url": "",
+      "published": true,
+      "availability": "in_stock"
     },
     {
       "id": "AK-107",
@@ -1010,9 +1310,12 @@
       "category": "Jewellery",
       "slug": "blue-heart-jewellery-set-ak-107",
       "image": "/products/p107.webp",
+      "image_url": "/products/p107.webp",
       "tags": "jewellery jewelry earring earrings bracelet bangle pendant necklace set blue heart jewellery set",
       "description": "Jewellery piece or set shown in the image, with its visible shape, colours and decorative design.",
-      "video_url": ""
+      "video_url": "",
+      "published": true,
+      "availability": "in_stock"
     },
     {
       "id": "AK-108",
@@ -1020,9 +1323,12 @@
       "category": "Jewellery",
       "slug": "colourful-drop-earrings-ak-108",
       "image": "/products/p108.webp",
+      "image_url": "/products/p108.webp",
       "tags": "jewellery jewelry earring earrings bracelet bangle pendant necklace set colourful drop earrings",
       "description": "Jewellery piece or set shown in the image, with its visible shape, colours and decorative design.",
-      "video_url": ""
+      "video_url": "",
+      "published": true,
+      "availability": "in_stock"
     },
     {
       "id": "AK-109",
@@ -1030,9 +1336,12 @@
       "category": "Jewellery",
       "slug": "floral-drop-earrings-set-ak-109",
       "image": "/products/p109.webp",
+      "image_url": "/products/p109.webp",
       "tags": "jewellery jewelry earring earrings bracelet bangle pendant necklace set floral drop earrings set",
       "description": "Jewellery piece or set shown in the image, with its visible shape, colours and decorative design.",
-      "video_url": ""
+      "video_url": "",
+      "published": true,
+      "availability": "in_stock"
     },
     {
       "id": "AK-110",
@@ -1040,9 +1349,12 @@
       "category": "Jewellery",
       "slug": "colourful-floral-earrings-ak-110",
       "image": "/products/p110.webp",
+      "image_url": "/products/p110.webp",
       "tags": "jewellery jewelry earring earrings bracelet bangle pendant necklace set colourful floral earrings",
       "description": "Jewellery piece or set shown in the image, with its visible shape, colours and decorative design.",
-      "video_url": ""
+      "video_url": "",
+      "published": true,
+      "availability": "in_stock"
     },
     {
       "id": "AK-111",
@@ -1050,9 +1362,12 @@
       "category": "Personalized Name Plates",
       "slug": "golden-script-name-plate-ak-111",
       "image": "/products/p111.webp",
+      "image_url": "/products/p111.webp",
       "tags": "name plate nameplate door sign door plate personalized custom plaque golden script name plate",
       "description": "Personalized decorative name or quote plaque featuring the visible text, border and embellishments shown in the image.",
-      "video_url": ""
+      "video_url": "",
+      "published": true,
+      "availability": "in_stock"
     },
     {
       "id": "AK-112",
@@ -1060,9 +1375,12 @@
       "category": "Personalized Name Plates",
       "slug": "round-punjabi-quote-name-plate-ak-112",
       "image": "/products/p112.webp",
+      "image_url": "/products/p112.webp",
       "tags": "name plate nameplate door sign door plate personalized custom plaque round punjabi quote name plate",
       "description": "Personalized decorative name or quote plaque featuring the visible text, border and embellishments shown in the image.",
-      "video_url": ""
+      "video_url": "",
+      "published": true,
+      "availability": "in_stock"
     },
     {
       "id": "AK-113",
@@ -1070,9 +1388,12 @@
       "category": "Personalized Name Plates",
       "slug": "floral-quote-name-plate-ak-113",
       "image": "/products/p113.webp",
+      "image_url": "/products/p113.webp",
       "tags": "name plate nameplate door sign door plate personalized custom plaque floral quote name plate",
       "description": "Personalized decorative name or quote plaque featuring the visible text, border and embellishments shown in the image.",
-      "video_url": ""
+      "video_url": "",
+      "published": true,
+      "availability": "in_stock"
     },
     {
       "id": "AK-114",
@@ -1080,9 +1401,12 @@
       "category": "Personalized Name Plates",
       "slug": "personalized-couple-name-plate-gold-border-ak-114",
       "image": "/products/p114.webp",
+      "image_url": "/products/p114.webp",
       "tags": "name plate nameplate door sign door plate personalized custom plaque personalized couple name plate   gold border",
       "description": "Personalized decorative name or quote plaque featuring the visible text, border and embellishments shown in the image.",
-      "video_url": ""
+      "video_url": "",
+      "published": true,
+      "availability": "in_stock"
     },
     {
       "id": "AK-115",
@@ -1090,9 +1414,12 @@
       "category": "Personalized Name Plates",
       "slug": "round-punjabi-text-name-plate-ak-115",
       "image": "/products/p115.webp",
+      "image_url": "/products/p115.webp",
       "tags": "name plate nameplate door sign door plate personalized custom plaque round punjabi text name plate",
       "description": "Personalized decorative name or quote plaque featuring the visible text, border and embellishments shown in the image.",
-      "video_url": ""
+      "video_url": "",
+      "published": true,
+      "availability": "in_stock"
     },
     {
       "id": "AK-116",
@@ -1100,9 +1427,12 @@
       "category": "Personalized Name Plates",
       "slug": "twin-round-quote-name-plate-ak-116",
       "image": "/products/p116.webp",
+      "image_url": "/products/p116.webp",
       "tags": "name plate nameplate door sign door plate personalized custom plaque twin round quote name plate",
       "description": "Personalized decorative name or quote plaque featuring the visible text, border and embellishments shown in the image.",
-      "video_url": ""
+      "video_url": "",
+      "published": true,
+      "availability": "in_stock"
     },
     {
       "id": "AK-117",
@@ -1110,9 +1440,12 @@
       "category": "Personalized Name Plates",
       "slug": "framed-punjabi-name-plate-ak-117",
       "image": "/products/p117.webp",
+      "image_url": "/products/p117.webp",
       "tags": "name plate nameplate door sign door plate personalized custom plaque framed punjabi name plate",
       "description": "Personalized decorative name or quote plaque featuring the visible text, border and embellishments shown in the image.",
-      "video_url": ""
+      "video_url": "",
+      "published": true,
+      "availability": "in_stock"
     },
     {
       "id": "AK-118",
@@ -1120,9 +1453,12 @@
       "category": "Personalized Name Plates",
       "slug": "golden-script-quote-name-plate-ak-118",
       "image": "/products/p118.webp",
+      "image_url": "/products/p118.webp",
       "tags": "name plate nameplate door sign door plate personalized custom plaque golden script quote name plate",
       "description": "Personalized decorative name or quote plaque featuring the visible text, border and embellishments shown in the image.",
-      "video_url": ""
+      "video_url": "",
+      "published": true,
+      "availability": "in_stock"
     },
     {
       "id": "AK-119",
@@ -1130,9 +1466,12 @@
       "category": "Personalized Name Plates",
       "slug": "round-personalized-name-plate-ak-119",
       "image": "/products/p119.webp",
+      "image_url": "/products/p119.webp",
       "tags": "name plate nameplate door sign door plate personalized custom plaque round personalized name plate",
       "description": "Personalized decorative name or quote plaque featuring the visible text, border and embellishments shown in the image.",
-      "video_url": ""
+      "video_url": "",
+      "published": true,
+      "availability": "in_stock"
     },
     {
       "id": "AK-120",
@@ -1140,9 +1479,12 @@
       "category": "Personalized Name Plates",
       "slug": "black-gold-punjabi-name-plate-floral-corner-ak-120",
       "image": "/products/p120.webp",
+      "image_url": "/products/p120.webp",
       "tags": "name plate nameplate door sign door plate personalized custom plaque black gold punjabi name plate   floral corner",
       "description": "Personalized decorative name or quote plaque featuring the visible text, border and embellishments shown in the image.",
-      "video_url": ""
+      "video_url": "",
+      "published": true,
+      "availability": "in_stock"
     },
     {
       "id": "AK-121",
@@ -1150,9 +1492,12 @@
       "category": "Personalized Name Plates",
       "slug": "framed-punjabi-quote-name-plate-ak-121",
       "image": "/products/p121.webp",
+      "image_url": "/products/p121.webp",
       "tags": "name plate nameplate door sign door plate personalized custom plaque framed punjabi quote name plate",
       "description": "Personalized decorative name or quote plaque featuring the visible text, border and embellishments shown in the image.",
-      "video_url": ""
+      "video_url": "",
+      "published": true,
+      "availability": "in_stock"
     },
     {
       "id": "AK-122",
@@ -1160,9 +1505,12 @@
       "category": "Personalized Name Plates",
       "slug": "welcome-home-name-plate-ak-122",
       "image": "/products/p122.webp",
+      "image_url": "/products/p122.webp",
       "tags": "name plate nameplate door sign door plate personalized custom plaque welcome home name plate",
       "description": "Personalized decorative name or quote plaque featuring the visible text, border and embellishments shown in the image.",
-      "video_url": ""
+      "video_url": "",
+      "published": true,
+      "availability": "in_stock"
     },
     {
       "id": "AK-123",
@@ -1170,9 +1518,12 @@
       "category": "Personalized Name Plates",
       "slug": "golden-script-welcome-name-plate-ak-123",
       "image": "/products/p123.webp",
+      "image_url": "/products/p123.webp",
       "tags": "name plate nameplate door sign door plate personalized custom plaque golden script welcome name plate",
       "description": "Personalized decorative name or quote plaque featuring the visible text, border and embellishments shown in the image.",
-      "video_url": ""
+      "video_url": "",
+      "published": true,
+      "availability": "in_stock"
     },
     {
       "id": "AK-124",
@@ -1180,9 +1531,12 @@
       "category": "Personalized Name Plates",
       "slug": "round-golden-quote-name-plate-ak-124",
       "image": "/products/p124.webp",
+      "image_url": "/products/p124.webp",
       "tags": "name plate nameplate door sign door plate personalized custom plaque round golden quote name plate",
       "description": "Personalized decorative name or quote plaque featuring the visible text, border and embellishments shown in the image.",
-      "video_url": ""
+      "video_url": "",
+      "published": true,
+      "availability": "in_stock"
     },
     {
       "id": "AK-125",
@@ -1190,9 +1544,12 @@
       "category": "Personalized Name Plates",
       "slug": "white-gold-punjabi-name-plate-ak-125",
       "image": "/products/p125.webp",
+      "image_url": "/products/p125.webp",
       "tags": "name plate nameplate door sign door plate personalized custom plaque white gold punjabi name plate",
       "description": "Personalized decorative name or quote plaque featuring the visible text, border and embellishments shown in the image.",
-      "video_url": ""
+      "video_url": "",
+      "published": true,
+      "availability": "in_stock"
     },
     {
       "id": "AK-126",
@@ -1200,9 +1557,12 @@
       "category": "Personalized Name Plates",
       "slug": "black-gold-quote-name-plate-ak-126",
       "image": "/products/p126.webp",
+      "image_url": "/products/p126.webp",
       "tags": "name plate nameplate door sign door plate personalized custom plaque black gold quote name plate",
       "description": "Personalized decorative name or quote plaque featuring the visible text, border and embellishments shown in the image.",
-      "video_url": ""
+      "video_url": "",
+      "published": true,
+      "availability": "in_stock"
     },
     {
       "id": "AK-127",
@@ -1210,9 +1570,12 @@
       "category": "Personalized Name Plates",
       "slug": "floral-punjabi-name-plate-dark-panel-ak-127",
       "image": "/products/p127.webp",
+      "image_url": "/products/p127.webp",
       "tags": "name plate nameplate door sign door plate personalized custom plaque floral punjabi name plate   dark panel",
       "description": "Personalized decorative name or quote plaque featuring the visible text, border and embellishments shown in the image.",
-      "video_url": ""
+      "video_url": "",
+      "published": true,
+      "availability": "in_stock"
     },
     {
       "id": "AK-128",
@@ -1220,9 +1583,12 @@
       "category": "Personalized Name Plates",
       "slug": "black-floral-quote-name-plate-ak-128",
       "image": "/products/p128.webp",
+      "image_url": "/products/p128.webp",
       "tags": "name plate nameplate door sign door plate personalized custom plaque black floral quote name plate",
       "description": "Personalized decorative name or quote plaque featuring the visible text, border and embellishments shown in the image.",
-      "video_url": ""
+      "video_url": "",
+      "published": true,
+      "availability": "in_stock"
     },
     {
       "id": "AK-129",
@@ -1230,9 +1596,12 @@
       "category": "Personalized Name Plates",
       "slug": "white-floral-quote-name-plate-ak-129",
       "image": "/products/p129.webp",
+      "image_url": "/products/p129.webp",
       "tags": "name plate nameplate door sign door plate personalized custom plaque white floral quote name plate",
       "description": "Personalized decorative name or quote plaque featuring the visible text, border and embellishments shown in the image.",
-      "video_url": ""
+      "video_url": "",
+      "published": true,
+      "availability": "in_stock"
     },
     {
       "id": "AK-130",
@@ -1240,9 +1609,12 @@
       "category": "Personalized Name Plates",
       "slug": "black-gold-punjabi-name-plate-white-border-ak-130",
       "image": "/products/p130.webp",
+      "image_url": "/products/p130.webp",
       "tags": "name plate nameplate door sign door plate personalized custom plaque black gold punjabi name plate   white border",
       "description": "Personalized decorative name or quote plaque featuring the visible text, border and embellishments shown in the image.",
-      "video_url": ""
+      "video_url": "",
+      "published": true,
+      "availability": "in_stock"
     },
     {
       "id": "AK-131",
@@ -1250,9 +1622,12 @@
       "category": "Personalized Name Plates",
       "slug": "black-gold-punjabi-name-plate-ornate-border-ak-131",
       "image": "/products/p131.webp",
+      "image_url": "/products/p131.webp",
       "tags": "name plate nameplate door sign door plate personalized custom plaque black gold punjabi name plate   ornate border",
       "description": "Personalized decorative name or quote plaque featuring the visible text, border and embellishments shown in the image.",
-      "video_url": ""
+      "video_url": "",
+      "published": true,
+      "availability": "in_stock"
     },
     {
       "id": "AK-132",
@@ -1260,9 +1635,12 @@
       "category": "Personalized Name Plates",
       "slug": "gold-outline-personalized-name-plate-ak-132",
       "image": "/products/p132.webp",
+      "image_url": "/products/p132.webp",
       "tags": "name plate nameplate door sign door plate personalized custom plaque gold outline personalized name plate",
       "description": "Personalized decorative name or quote plaque featuring the visible text, border and embellishments shown in the image.",
-      "video_url": ""
+      "video_url": "",
+      "published": true,
+      "availability": "in_stock"
     },
     {
       "id": "AK-133",
@@ -1270,9 +1648,12 @@
       "category": "Personalized Name Plates",
       "slug": "gold-glitter-quote-name-plate-ak-133",
       "image": "/products/p133.webp",
+      "image_url": "/products/p133.webp",
       "tags": "name plate nameplate door sign door plate personalized custom plaque gold glitter quote name plate",
       "description": "Personalized decorative name or quote plaque featuring the visible text, border and embellishments shown in the image.",
-      "video_url": ""
+      "video_url": "",
+      "published": true,
+      "availability": "in_stock"
     },
     {
       "id": "AK-134",
@@ -1280,9 +1661,12 @@
       "category": "Personalized Name Plates",
       "slug": "floral-punjabi-name-plate-white-panel-ak-134",
       "image": "/products/p134.webp",
+      "image_url": "/products/p134.webp",
       "tags": "name plate nameplate door sign door plate personalized custom plaque floral punjabi name plate   white panel",
       "description": "Personalized decorative name or quote plaque featuring the visible text, border and embellishments shown in the image.",
-      "video_url": ""
+      "video_url": "",
+      "published": true,
+      "availability": "in_stock"
     },
     {
       "id": "AK-135",
@@ -1290,9 +1674,12 @@
       "category": "Personalized Name Plates",
       "slug": "personalized-couple-name-plate-blue-edge-ak-135",
       "image": "/products/p135.webp",
+      "image_url": "/products/p135.webp",
       "tags": "name plate nameplate door sign door plate personalized custom plaque personalized couple name plate   blue edge",
       "description": "Personalized decorative name or quote plaque featuring the visible text, border and embellishments shown in the image.",
-      "video_url": ""
+      "video_url": "",
+      "published": true,
+      "availability": "in_stock"
     },
     {
       "id": "AK-136",
@@ -1300,9 +1687,12 @@
       "category": "Personalized Name Plates",
       "slug": "golden-border-name-plate-ak-136",
       "image": "/products/p136.webp",
+      "image_url": "/products/p136.webp",
       "tags": "name plate nameplate door sign door plate personalized custom plaque golden border name plate",
       "description": "Personalized decorative name or quote plaque featuring the visible text, border and embellishments shown in the image.",
-      "video_url": ""
+      "video_url": "",
+      "published": true,
+      "availability": "in_stock"
     },
     {
       "id": "AK-137",
@@ -1310,9 +1700,12 @@
       "category": "Personalized Name Plates",
       "slug": "personalized-couple-name-plate-gold-script-ak-137",
       "image": "/products/p137.webp",
+      "image_url": "/products/p137.webp",
       "tags": "name plate nameplate door sign door plate personalized custom plaque personalized couple name plate   gold script",
       "description": "Personalized decorative name or quote plaque featuring the visible text, border and embellishments shown in the image.",
-      "video_url": ""
+      "video_url": "",
+      "published": true,
+      "availability": "in_stock"
     },
     {
       "id": "AK-138",
@@ -1320,9 +1713,12 @@
       "category": "Personalized Name Plates",
       "slug": "black-gold-couple-name-plate-ak-138",
       "image": "/products/p138.webp",
+      "image_url": "/products/p138.webp",
       "tags": "name plate nameplate door sign door plate personalized custom plaque black gold couple name plate",
       "description": "Personalized decorative name or quote plaque featuring the visible text, border and embellishments shown in the image.",
-      "video_url": ""
+      "video_url": "",
+      "published": true,
+      "availability": "in_stock"
     },
     {
       "id": "AK-139",
@@ -1330,9 +1726,12 @@
       "category": "Diya & Candle Holders",
       "slug": "double-tea-light-holder-ak-139",
       "image": "/products/p139.webp",
+      "image_url": "/products/p139.webp",
       "tags": "diya candle tea light tealight holder holders double tea light holder",
       "description": "Decorative diya or tea-light/candle holder shown with visible floral, round or embellished detailing.",
-      "video_url": ""
+      "video_url": "",
+      "published": true,
+      "availability": "in_stock"
     },
     {
       "id": "AK-140",
@@ -1340,9 +1739,12 @@
       "category": "Diya & Candle Holders",
       "slug": "resin-style-tea-light-holder-ak-140",
       "image": "/products/p140.webp",
+      "image_url": "/products/p140.webp",
       "tags": "diya candle tea light tealight holder holders resin style tea light holder",
       "description": "Decorative diya or tea-light/candle holder shown with visible floral, round or embellished detailing.",
-      "video_url": ""
+      "video_url": "",
+      "published": true,
+      "availability": "in_stock"
     },
     {
       "id": "AK-141",
@@ -1350,9 +1752,12 @@
       "category": "Diya & Candle Holders",
       "slug": "lotus-tea-light-holder-set-ak-141",
       "image": "/products/p141.webp",
+      "image_url": "/products/p141.webp",
       "tags": "diya candle tea light tealight holder holders lotus tea light holder set",
       "description": "Decorative diya or tea-light/candle holder shown with visible floral, round or embellished detailing.",
-      "video_url": ""
+      "video_url": "",
+      "published": true,
+      "availability": "in_stock"
     },
     {
       "id": "AK-142",
@@ -1360,9 +1765,12 @@
       "category": "Diya & Candle Holders",
       "slug": "floral-tea-light-holder-set-pink-flowers-ak-142",
       "image": "/products/p142.webp",
+      "image_url": "/products/p142.webp",
       "tags": "diya candle tea light tealight holder holders floral tea light holder set   pink flowers",
       "description": "Decorative diya or tea-light/candle holder shown with visible floral, round or embellished detailing.",
-      "video_url": ""
+      "video_url": "",
+      "published": true,
+      "availability": "in_stock"
     },
     {
       "id": "AK-143",
@@ -1370,9 +1778,12 @@
       "category": "Diya & Candle Holders",
       "slug": "floral-candle-holder-pair-ak-143",
       "image": "/products/p143.webp",
+      "image_url": "/products/p143.webp",
       "tags": "diya candle tea light tealight holder holders floral candle holder pair",
       "description": "Decorative diya or tea-light/candle holder shown with visible floral, round or embellished detailing.",
-      "video_url": ""
+      "video_url": "",
+      "published": true,
+      "availability": "in_stock"
     },
     {
       "id": "AK-144",
@@ -1380,9 +1791,12 @@
       "category": "Diya & Candle Holders",
       "slug": "round-floral-tea-light-holder-set-ak-144",
       "image": "/products/p144.webp",
+      "image_url": "/products/p144.webp",
       "tags": "diya candle tea light tealight holder holders round floral tea light holder set",
       "description": "Decorative diya or tea-light/candle holder shown with visible floral, round or embellished detailing.",
-      "video_url": ""
+      "video_url": "",
+      "published": true,
+      "availability": "in_stock"
     },
     {
       "id": "AK-145",
@@ -1390,9 +1804,12 @@
       "category": "Diya & Candle Holders",
       "slug": "floral-tea-light-holder-set-round-designs-ak-145",
       "image": "/products/p145.webp",
+      "image_url": "/products/p145.webp",
       "tags": "diya candle tea light tealight holder holders floral tea light holder set   round designs",
       "description": "Decorative diya or tea-light/candle holder shown with visible floral, round or embellished detailing.",
-      "video_url": ""
+      "video_url": "",
+      "published": true,
+      "availability": "in_stock"
     },
     {
       "id": "AK-146",
@@ -1400,9 +1817,12 @@
       "category": "Diya & Candle Holders",
       "slug": "decorative-tea-light-holder-set-ak-146",
       "image": "/products/p146.webp",
+      "image_url": "/products/p146.webp",
       "tags": "diya candle tea light tealight holder holders decorative tea light holder set",
       "description": "Decorative diya or tea-light/candle holder shown with visible floral, round or embellished detailing.",
-      "video_url": ""
+      "video_url": "",
+      "published": true,
+      "availability": "in_stock"
     },
     {
       "id": "AK-147",
@@ -1410,9 +1830,12 @@
       "category": "Jewellery",
       "slug": "multicolour-floral-bracelet-ak-147",
       "image": "/products/p147.webp",
+      "image_url": "/products/p147.webp",
       "tags": "jewellery jewelry earring earrings bracelet bangle pendant necklace set multicolour floral bracelet",
       "description": "Bracelet with multiple round floral-patterned charms linked by metal rings and a clasp.",
-      "video_url": ""
+      "video_url": "",
+      "published": true,
+      "availability": "in_stock"
     },
     {
       "id": "AK-150",
@@ -1420,9 +1843,12 @@
       "category": "Keychains & Key Holders",
       "slug": "personalized-name-keychain-set-ak-150",
       "image": "/products/p150.webp",
+      "image_url": "/products/p150.webp",
       "tags": "keychain key chain key holder keyring key ring personalized name keychain set",
       "description": "Keychain or key holder shown in the image, with its visible shape, colours and decorative details.",
-      "video_url": ""
+      "video_url": "",
+      "published": true,
+      "availability": "in_stock"
     },
     {
       "id": "AK-151",
@@ -1430,9 +1856,12 @@
       "category": "Keychains & Key Holders",
       "slug": "resin-alphabet-keychain-set-letter-mix-ak-151",
       "image": "/products/p151.webp",
+      "image_url": "/products/p151.webp",
       "tags": "keychain key chain key holder keyring key ring resin alphabet keychain set   letter mix",
       "description": "Keychain or key holder shown in the image, with its visible shape, colours and decorative details.",
-      "video_url": ""
+      "video_url": "",
+      "published": true,
+      "availability": "in_stock"
     },
     {
       "id": "AK-152",
@@ -1440,9 +1869,12 @@
       "category": "Keychains & Key Holders",
       "slug": "initial-keychain-ak-152",
       "image": "/products/p152.webp",
+      "image_url": "/products/p152.webp",
       "tags": "keychain key chain key holder keyring key ring initial keychain",
       "description": "Keychain or key holder shown in the image, with its visible shape, colours and decorative details.",
-      "video_url": ""
+      "video_url": "",
+      "published": true,
+      "availability": "in_stock"
     },
     {
       "id": "AK-153",
@@ -1450,9 +1882,12 @@
       "category": "Keychains & Key Holders",
       "slug": "heart-charm-keychain-floral-heart-ak-153",
       "image": "/products/p153.webp",
+      "image_url": "/products/p153.webp",
       "tags": "keychain key chain key holder keyring key ring heart charm keychain   floral heart",
       "description": "Keychain or key holder shown in the image, with its visible shape, colours and decorative details.",
-      "video_url": ""
+      "video_url": "",
+      "published": true,
+      "availability": "in_stock"
     },
     {
       "id": "AK-154",
@@ -1460,9 +1895,12 @@
       "category": "Keychains & Key Holders",
       "slug": "floral-resin-keychain-ak-154",
       "image": "/products/p154.webp",
+      "image_url": "/products/p154.webp",
       "tags": "keychain key chain key holder keyring key ring floral resin keychain",
       "description": "Keychain or key holder shown in the image, with its visible shape, colours and decorative details.",
-      "video_url": ""
+      "video_url": "",
+      "published": true,
+      "availability": "in_stock"
     },
     {
       "id": "AK-155",
@@ -1470,9 +1908,12 @@
       "category": "Keychains & Key Holders",
       "slug": "floral-key-holder-ak-155",
       "image": "/products/p155.webp",
+      "image_url": "/products/p155.webp",
       "tags": "keychain key chain key holder keyring key ring floral key holder",
       "description": "Keychain or key holder shown in the image, with its visible shape, colours and decorative details.",
-      "video_url": ""
+      "video_url": "",
+      "published": true,
+      "availability": "in_stock"
     },
     {
       "id": "AK-156",
@@ -1480,9 +1921,12 @@
       "category": "Keychains & Key Holders",
       "slug": "floral-wall-key-holder-ak-156",
       "image": "/products/p156.webp",
+      "image_url": "/products/p156.webp",
       "tags": "keychain key chain key holder keyring key ring floral wall key holder",
       "description": "Keychain or key holder shown in the image, with its visible shape, colours and decorative details.",
-      "video_url": ""
+      "video_url": "",
+      "published": true,
+      "availability": "in_stock"
     },
     {
       "id": "AK-157",
@@ -1490,9 +1934,12 @@
       "category": "Keychains & Key Holders",
       "slug": "decorative-key-holder-ak-157",
       "image": "/products/p157.webp",
+      "image_url": "/products/p157.webp",
       "tags": "keychain key chain key holder keyring key ring decorative key holder",
       "description": "Keychain or key holder shown in the image, with its visible shape, colours and decorative details.",
-      "video_url": ""
+      "video_url": "",
+      "published": true,
+      "availability": "in_stock"
     },
     {
       "id": "AK-158",
@@ -1500,9 +1947,12 @@
       "category": "Jewellery",
       "slug": "pressed-flower-drop-earrings-ak-158",
       "image": "/products/p158.webp",
+      "image_url": "/products/p158.webp",
       "tags": "jewellery jewelry earring earrings bracelet bangle pendant necklace set pressed flower drop earrings",
       "description": "Pair of rectangular drop earrings with pressed flower and leaf details inside clear panels.",
-      "video_url": ""
+      "video_url": "",
+      "published": true,
+      "availability": "in_stock"
     },
     {
       "id": "AK-159",
@@ -1510,9 +1960,12 @@
       "category": "Home Decor",
       "slug": "floral-heart-home-decor-ak-159",
       "image": "/products/p159.webp",
+      "image_url": "/products/p159.webp",
       "tags": "home decor decoration accent plaque wall art floral floral heart home decor",
       "description": "Heart-shaped decorative piece featuring preserved-style floral arrangements in a clear display.",
-      "video_url": ""
+      "video_url": "",
+      "published": true,
+      "availability": "in_stock"
     },
     {
       "id": "AK-160",
@@ -1520,9 +1973,12 @@
       "category": "Home Decor",
       "slug": "decorative-quote-plaque-ak-160",
       "image": "/products/p160.webp",
+      "image_url": "/products/p160.webp",
       "tags": "home decor decoration accent plaque wall art floral decorative quote plaque",
       "description": "Small round decorative plaque on a stand featuring a visible Punjabi quote and gold-toned edging.",
-      "video_url": ""
+      "video_url": "",
+      "published": true,
+      "availability": "in_stock"
     },
     {
       "id": "AK-161",
@@ -1530,9 +1986,12 @@
       "category": "Product Image Requires Review",
       "slug": "product-image-requires-review-ak-161",
       "image": "/products/p161.webp",
+      "image_url": "/products/p161.webp",
       "tags": "product image requires review",
       "description": "The image contains a company/brand graphic rather than a clearly identifiable physical product. Product identification requires review.",
-      "video_url": ""
+      "video_url": "",
+      "published": true,
+      "availability": "in_stock"
     },
     {
       "id": "AK-162",
@@ -1540,9 +1999,12 @@
       "category": "Tray Sets",
       "slug": "floral-decorative-tray-ak-162",
       "image": "/products/p162.webp",
+      "image_url": "/products/p162.webp",
       "tags": "tray tray set serving decorative floral decorative tray",
       "description": "Rectangular decorative tray with floral detailing and side handles.",
-      "video_url": ""
+      "video_url": "",
+      "published": true,
+      "availability": "in_stock"
     },
     {
       "id": "AK-163",
@@ -1550,9 +2012,12 @@
       "category": "Home Decor",
       "slug": "floral-circular-home-decor-ak-163",
       "image": "/products/p163.webp",
+      "image_url": "/products/p163.webp",
       "tags": "home decor decoration accent plaque wall art floral floral circular home decor",
       "description": "Circular decorative piece with floral detailing and a hanging-style presentation.",
-      "video_url": ""
+      "video_url": "",
+      "published": true,
+      "availability": "in_stock"
     },
     {
       "id": "AK-164",
@@ -1560,9 +2025,12 @@
       "category": "Home Decor & Tissue Holders",
       "slug": "decorative-tissue-holder-ak-164",
       "image": "/products/p164.webp",
+      "image_url": "/products/p164.webp",
       "tags": "tissue tissue holder napkin holder home decor decorative tissue holder",
       "description": "Decorative tissue holder with a visible rectangular opening and embellished floral-style detailing.",
-      "video_url": ""
+      "video_url": "",
+      "published": true,
+      "availability": "in_stock"
     },
     {
       "id": "AK-165",
@@ -1570,9 +2038,12 @@
       "category": "Home Decor",
       "slug": "pressed-flower-table-decor-ak-165",
       "image": "/products/p165.webp",
+      "image_url": "/products/p165.webp",
       "tags": "home decor decoration accent plaque wall art floral pressed flower table decor",
       "description": "Round-base decorative display featuring dried or pressed flowers in a clear upright panel.",
-      "video_url": ""
+      "video_url": "",
+      "published": true,
+      "availability": "in_stock"
     },
     {
       "id": "AK-166",
@@ -1580,9 +2051,12 @@
       "category": "Photo Frames",
       "slug": "floral-decorative-photo-frame-ak-166",
       "image": "/products/p166.webp",
+      "image_url": "/products/p166.webp",
       "tags": "photo frame photoframe picture frame memory wedding personalized photo frame floral decorative photo frame",
       "description": "Square decorative photo frame with a central image and ornate floral embellishment.",
-      "video_url": ""
+      "video_url": "",
+      "published": true,
+      "availability": "in_stock"
     },
     {
       "id": "AK-167",
@@ -1590,9 +2064,12 @@
       "category": "Photo Frames",
       "slug": "illuminated-personalized-wedding-frame-ak-167",
       "image": "/products/p167.webp",
+      "image_url": "/products/p167.webp",
       "tags": "photo frame photoframe picture frame memory wedding personalized photo frame illuminated personalized wedding frame",
       "description": "Large illuminated wedding display frame with two portrait photos, names and a date, plus decorative wedding elements.",
-      "video_url": ""
+      "video_url": "",
+      "published": true,
+      "availability": "in_stock"
     },
     {
       "id": "AK-168",
@@ -1600,9 +2077,12 @@
       "category": "Rakhi",
       "slug": "round-floral-rakhi-set-ak-168",
       "image": "/products/p168.webp",
+      "image_url": "/products/p168.webp",
       "tags": "rakhi rakhri raksha bandhan festival round floral rakhi set",
       "description": "Rakhi design shown in the image, featuring its visible decorative elements and presentation.",
-      "video_url": ""
+      "video_url": "",
+      "published": true,
+      "availability": "in_stock"
     },
     {
       "id": "AK-169",
@@ -1610,9 +2090,12 @@
       "category": "Rakhi",
       "slug": "handmade-charm-rakhi-ak-169",
       "image": "/products/p169.webp",
+      "image_url": "/products/p169.webp",
       "tags": "rakhi rakhri raksha bandhan festival handmade charm rakhi",
       "description": "Rakhi design shown in the image, featuring its visible decorative elements and presentation.",
-      "video_url": ""
+      "video_url": "",
+      "published": true,
+      "availability": "in_stock"
     },
     {
       "id": "AK-170",
@@ -1620,9 +2103,12 @@
       "category": "Rakhi",
       "slug": "photo-rakhi-set-family-photos-ak-170",
       "image": "/products/p170.webp",
+      "image_url": "/products/p170.webp",
       "tags": "rakhi rakhri raksha bandhan festival photo rakhi set   family photos",
       "description": "Rakhi design shown in the image, featuring its visible decorative elements and presentation.",
-      "video_url": ""
+      "video_url": "",
+      "published": true,
+      "availability": "in_stock"
     },
     {
       "id": "AK-171",
@@ -1630,9 +2116,12 @@
       "category": "Rakhi",
       "slug": "personalized-rakhi-set-ak-171",
       "image": "/products/p171.webp",
+      "image_url": "/products/p171.webp",
       "tags": "rakhi rakhri raksha bandhan festival personalized rakhi set",
       "description": "Rakhi design shown in the image, featuring its visible decorative elements and presentation.",
-      "video_url": ""
+      "video_url": "",
+      "published": true,
+      "availability": "in_stock"
     },
     {
       "id": "AK-172",
@@ -1640,9 +2129,12 @@
       "category": "Rakhi",
       "slug": "festive-rakhi-set-ak-172",
       "image": "/products/p172.webp",
+      "image_url": "/products/p172.webp",
       "tags": "rakhi rakhri raksha bandhan festival festive rakhi set",
       "description": "Rakhi design shown in the image, featuring its visible decorative elements and presentation.",
-      "video_url": ""
+      "video_url": "",
+      "published": true,
+      "availability": "in_stock"
     },
     {
       "id": "AK-173",
@@ -1650,9 +2142,12 @@
       "category": "Rakhi",
       "slug": "photo-rakhi-set-custom-photos-ak-173",
       "image": "/products/p173.webp",
+      "image_url": "/products/p173.webp",
       "tags": "rakhi rakhri raksha bandhan festival photo rakhi set   custom photos",
       "description": "Rakhi design shown in the image, featuring its visible decorative elements and presentation.",
-      "video_url": ""
+      "video_url": "",
+      "published": true,
+      "availability": "in_stock"
     },
     {
       "id": "AK-174",
@@ -1660,9 +2155,12 @@
       "category": "Rakhi",
       "slug": "personalized-photo-rakhi-set-ak-174",
       "image": "/products/p174.webp",
+      "image_url": "/products/p174.webp",
       "tags": "rakhi rakhri raksha bandhan festival personalized photo rakhi set",
       "description": "Rakhi design shown in the image, featuring its visible decorative elements and presentation.",
-      "video_url": ""
+      "video_url": "",
+      "published": true,
+      "availability": "in_stock"
     },
     {
       "id": "AK-032",
@@ -1670,9 +2168,12 @@
       "category": "Wall Clocks",
       "slug": "round-personalized-wall-clock-ak-032",
       "image": "/products/p032.webp",
+      "image_url": "/products/p032.webp",
       "tags": "wall clock clock clocks ghadi घड़ी round personalized wall clock",
       "description": "Round decorative wall clock with a visible clock face and distinctive colour or pattern shown in the image.",
-      "video_url": ""
+      "video_url": "",
+      "published": true,
+      "availability": "in_stock"
     },
     {
       "id": "AK-061",
@@ -1680,9 +2181,12 @@
       "category": "Tray Sets",
       "slug": "black-decorative-tray-ak-061",
       "image": "/products/p061.webp",
+      "image_url": "/products/p061.webp",
       "tags": "tray tray set serving decorative black decorative tray",
       "description": "Decorative tray or tray set shown with its visible shape, pattern and embellishment.",
-      "video_url": ""
+      "video_url": "",
+      "published": true,
+      "availability": "in_stock"
     },
     {
       "id": "AK-001",
@@ -1690,9 +2194,12 @@
       "category": "Puja Thali",
       "slug": "orange-floral-puja-thali-ak-001",
       "image": "/products/p001.webp",
+      "image_url": "/products/p001.webp",
       "tags": "puja pooja thali aarti  orange floral puja thali",
       "description": "Round decorative puja thali with an orange-toned center, floral detailing and diya holders around the rim.",
-      "video_url": "blob:https://ais-dev-au4wxgrzunm2yh6uflwpqe-942455917759.asia-east1.run.app/58ab9b42-beee-4438-b177-37d86392e38e"
+      "video_url": "blob:https://ais-dev-au4wxgrzunm2yh6uflwpqe-942455917759.asia-east1.run.app/58ab9b42-beee-4438-b177-37d86392e38e",
+      "published": true,
+      "availability": "in_stock"
     }
   ]
 }

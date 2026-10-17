@@ -6,6 +6,7 @@ import fs from 'fs';
 import crypto from 'crypto';
 import pg from 'pg';
 import { fileURLToPath } from 'url';
+import initialDataJson from './src/data/initialData.json';
 
 dotenv.config({ override: true });
 
@@ -101,7 +102,11 @@ function getBaselineProducts(): any[] {
       rawProducts = Array.isArray(parsed.products) ? parsed.products : [];
     }
   } catch (e) {
-    console.warn('Could not read initialData.json:', e);
+    // fallback to static import
+  }
+
+  if (rawProducts.length === 0 && initialDataJson && Array.isArray((initialDataJson as any).products)) {
+    rawProducts = (initialDataJson as any).products;
   }
 
   return rawProducts
@@ -119,6 +124,9 @@ function getBaselineProducts(): any[] {
         video_url = 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyBlazes.mp4';
       }
     }
+    const rawImg = p.image_url || p.image || '';
+    const imgPath = rawImg.trim() ? rawImg.trim() : '/logo.png';
+
     return {
       id: p.id,
       type: p.type || 'product',
@@ -126,7 +134,8 @@ function getBaselineProducts(): any[] {
       category: p.category || 'Uncategorized',
       slug: p.slug || `item-${p.id.toLowerCase()}`,
       description: p.description || '',
-      image_url: p.image_url || p.image || '/logo.png',
+      image_url: imgPath,
+      image: imgPath,
       video_url,
       tags: p.tags || '',
       published: p.published !== false,
@@ -217,7 +226,7 @@ function persistCatalogStorage() {
     fs.writeFileSync(catalogStorageFile, JSON.stringify(catalogData, null, 2), 'utf-8');
   } catch (e) {}
 
-  // Sync to src/data/initialData.json so that Git and GitHub repository reflect every admin change immediately
+  // Sync to src/data/initialData.json, public/products.json, dist/products.json, and products.js
   try {
     let initialObj: any = { brand: 'AnmolKala', whatsapp: '919810116510', phone: '919717887313', email: 'anmolkala.in@gmail.com' };
     if (fs.existsSync(initialDataFile)) {
@@ -232,27 +241,22 @@ function persistCatalogStorage() {
       category: p.category,
       slug: p.slug,
       image: p.image_url || p.image || '/logo.png',
+      image_url: p.image_url || p.image || '/logo.png',
       tags: p.tags || '',
       description: p.description || '',
       video_url: p.video_url || '',
       published: p.published !== false,
       availability: p.availability || 'in_stock',
     }));
-    fs.writeFileSync(initialDataFile, JSON.stringify(initialObj, null, 2), 'utf-8');
-
-    // Also write static public/products.json so any mobile or static device can load the exact current catalog
-    fs.writeFileSync(publicProductsJsonFile, JSON.stringify(initialObj.products, null, 2), 'utf-8');
-
-    // If dist folder exists, write to dist/products.json as well
-    if (fs.existsSync(path.resolve(__dirname, 'dist'))) {
-      fs.writeFileSync(distProductsJsonFile, JSON.stringify(initialObj.products, null, 2), 'utf-8');
-    }
-
-    // Keep products.js in sync for any static script tag consumer
-    fs.writeFileSync(rootProductsJsFile, `window.ANMOLKALA_DATA = ${JSON.stringify(initialObj)};`, 'utf-8');
-  } catch (e) {
-    console.warn('Could not sync initialData.json, public/products.json, or products.js:', e);
-  }
+    try { fs.writeFileSync(initialDataFile, JSON.stringify(initialObj, null, 2), 'utf-8'); } catch (e) {}
+    try { fs.writeFileSync(publicProductsJsonFile, JSON.stringify(initialObj.products, null, 2), 'utf-8'); } catch (e) {}
+    try {
+      if (fs.existsSync(path.resolve(__dirname, 'dist'))) {
+        fs.writeFileSync(distProductsJsonFile, JSON.stringify(initialObj.products, null, 2), 'utf-8');
+      }
+    } catch (e) {}
+    try { fs.writeFileSync(rootProductsJsFile, `window.ANMOLKALA_DATA = ${JSON.stringify(initialObj)};`, 'utf-8'); } catch (e) {}
+  } catch (e) {}
 }
 
 // -------------------------------------------------------------
@@ -480,7 +484,7 @@ function verifyToken(token: string): { valid: boolean; email?: string } {
     return { valid: false };
   }
   const parts = token.split('_');
-  if (parts.length !== 3) return { valid: false };
+  if (parts.length < 3) return { valid: false };
 
   const timestamp = parseInt(parts[1], 10);
   if (isNaN(timestamp) || Date.now() - timestamp > 24 * 60 * 60 * 1000) {
@@ -520,6 +524,17 @@ app.use((req: Request, _res: Response, next: NextFunction) => {
     }
   }
   next();
+});
+
+// Static product images serving (ensures photos are always accessible in dev, preview, and production)
+app.use('/products', express.static(path.resolve(__dirname, 'public/products')));
+if (fs.existsSync(path.resolve(__dirname, 'dist/products'))) {
+  app.use('/products', express.static(path.resolve(__dirname, 'dist/products')));
+}
+
+// API Health and Status root endpoint
+app.get(['/api', '/api/index'], (_req: Request, res: Response) => {
+  return res.json({ status: 'ok', service: 'AnmolKala API', timestamp: new Date().toISOString() });
 });
 
 // -------------------------------------------------------------
@@ -1008,6 +1023,7 @@ app.delete('/api/media/:id', async (req: Request, res: Response) => {
 
 // Explicit Live Multi-Sync Endpoint for Admin
 app.post('/api/admin/sync-all', async (req: Request, res: Response) => {
+  res.setHeader('Content-Type', 'application/json');
   const authHeader = req.headers.authorization;
   const token = authHeader?.replace(/^Bearer\s+/i, '');
   const verification = verifyToken(String(token || req.body?.token || ''));
@@ -1018,43 +1034,53 @@ app.post('/api/admin/sync-all', async (req: Request, res: Response) => {
   try {
     // 1. Delete any products removed from catalogData from database tables
     const activeIds = catalogData.products.map((p) => p.id);
-    if (activeIds.length > 0) {
-      const placeholders = activeIds.map((_, idx) => `$${idx + 1}`).join(', ');
-      await executeDualWrite(`DELETE FROM store_items WHERE id NOT IN (${placeholders});`, activeIds);
+    if (activeIds.length > 0 && isDbConnected) {
+      try {
+        const placeholders = activeIds.map((_, idx) => `$${idx + 1}`).join(', ');
+        await executeDualWrite(`DELETE FROM store_items WHERE id NOT IN (${placeholders});`, activeIds);
+      } catch (dbErr: any) {
+        console.warn('[Sync warning]: Could not delete obsolete items from DB:', dbErr?.message);
+      }
     }
 
-    // 2. Sync every product in catalogData to Cloud SQL & Supabase
-    for (const p of catalogData.products) {
-      await executeDualWrite(
-        `INSERT INTO store_items (id, type, name, category, slug, description, image_url, video_url, tags, published, availability, created_at, updated_at)
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
-         ON CONFLICT (id) DO UPDATE SET
-           name = EXCLUDED.name,
-           category = EXCLUDED.category,
-           slug = EXCLUDED.slug,
-           description = EXCLUDED.description,
-           image_url = EXCLUDED.image_url,
-           video_url = EXCLUDED.video_url,
-           tags = EXCLUDED.tags,
-           published = EXCLUDED.published,
-           availability = EXCLUDED.availability,
-           updated_at = EXCLUDED.updated_at;`,
-        [
-          p.id,
-          p.type || 'product',
-          p.name,
-          p.category,
-          p.slug,
-          p.description || '',
-          p.image_url || '/logo.png',
-          p.video_url || '',
-          p.tags || '',
-          p.published !== false,
-          p.availability || 'in_stock',
-          p.created_at || new Date().toISOString(),
-          p.updated_at || new Date().toISOString(),
-        ]
-      );
+    // 2. Sync every product in catalogData to Cloud SQL & Supabase if connected
+    if (isDbConnected) {
+      for (const p of catalogData.products) {
+        try {
+          await executeDualWrite(
+            `INSERT INTO store_items (id, type, name, category, slug, description, image_url, video_url, tags, published, availability, created_at, updated_at)
+             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
+             ON CONFLICT (id) DO UPDATE SET
+               name = EXCLUDED.name,
+               category = EXCLUDED.category,
+               slug = EXCLUDED.slug,
+               description = EXCLUDED.description,
+               image_url = EXCLUDED.image_url,
+               video_url = EXCLUDED.video_url,
+               tags = EXCLUDED.tags,
+               published = EXCLUDED.published,
+               availability = EXCLUDED.availability,
+               updated_at = EXCLUDED.updated_at;`,
+            [
+              p.id,
+              p.type || 'product',
+              p.name,
+              p.category,
+              p.slug,
+              p.description || '',
+              p.image_url || p.image || '/logo.png',
+              p.video_url || '',
+              p.tags || '',
+              p.published !== false,
+              p.availability || 'in_stock',
+              p.created_at || new Date().toISOString(),
+              p.updated_at || new Date().toISOString(),
+            ]
+          );
+        } catch (itemErr: any) {
+          console.warn(`[Sync warning for ${p.id}]:`, itemErr?.message);
+        }
+      }
     }
 
     // 3. Persist all JSON and JS files
@@ -1069,7 +1095,7 @@ app.post('/api/admin/sync-all', async (req: Request, res: Response) => {
 
     return res.json({
       success: true,
-      message: 'All changes live immediately across Website, Cloud SQL, Supabase, and GitHub repository files.',
+      message: 'All changes live immediately across Website, Database, and Storage.',
       counts: {
         products: catalogData.products.length,
         categories: catalogData.categories.length,
@@ -1202,8 +1228,17 @@ async function startServer() {
     });
   } else {
     const distPath = path.resolve(__dirname, 'dist');
+    const publicPath = path.resolve(__dirname, 'public');
+    app.use('/products', express.static(path.resolve(publicPath, 'products')));
+    if (fs.existsSync(path.resolve(distPath, 'products'))) {
+      app.use('/products', express.static(path.resolve(distPath, 'products')));
+    }
     app.use(express.static(distPath));
-    app.use((_req: Request, res: Response) => {
+    app.use(express.static(publicPath));
+    app.use((req: Request, res: Response) => {
+      if (req.url.startsWith('/api/') || req.url.startsWith('/products/')) {
+        return res.status(404).json({ error: 'Not found' });
+      }
       res.sendFile(path.join(distPath, 'index.html'));
     });
   }

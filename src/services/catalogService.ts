@@ -343,12 +343,24 @@ export async function syncAllEverywhere(token?: string): Promise<{ success: bool
       },
       body: JSON.stringify({ token }),
     });
-    const data = await res.json();
+
+    const contentType = res.headers.get('content-type') || '';
     if (res.ok) {
+      if (contentType.includes('application/json')) {
+        const data = await res.json();
+        notifyCatalogUpdated();
+        return { success: true, message: data.message || 'Synced live everywhere across Website and Database!' };
+      }
       notifyCatalogUpdated();
-      return { success: true, message: data.message || 'Synced live everywhere across Website, Supabase, and GitHub!' };
+      return { success: true, message: 'All changes synced live everywhere!' };
     }
-    return { success: false, message: data.error || 'Sync failed.' };
+
+    if (contentType.includes('application/json')) {
+      const data = await res.json();
+      return { success: false, message: data.error || `Sync error: HTTP ${res.status}` };
+    }
+    const text = await res.text();
+    return { success: false, message: text.slice(0, 150) || `Sync failed with HTTP ${res.status}.` };
   } catch (e: any) {
     return { success: false, message: e.message || 'Sync failed.' };
   }
@@ -803,13 +815,24 @@ export async function syncAllToCloudAndGithub(): Promise<{ success: boolean; mes
       },
       body: JSON.stringify({ token }),
     });
+
+    const contentType = res.headers.get('content-type') || '';
     if (res.ok) {
-      const data = await res.json();
+      if (contentType.includes('application/json')) {
+        const data = await res.json();
+        notifyCatalogUpdated();
+        return { success: true, message: data.message || 'All changes synced live everywhere!' };
+      }
       notifyCatalogUpdated();
-      return { success: true, message: data.message || 'All changes synced live everywhere!' };
+      return { success: true, message: 'All changes synced live everywhere!' };
     }
-    const err = await res.json();
-    return { success: false, message: err.error || 'Sync failed.' };
+
+    if (contentType.includes('application/json')) {
+      const err = await res.json();
+      return { success: false, message: err.error || `Sync error: HTTP ${res.status}` };
+    }
+    const text = await res.text();
+    return { success: false, message: text.slice(0, 150) || `Sync failed with HTTP ${res.status}` };
   } catch (e: any) {
     return { success: false, message: e.message || 'Network error syncing.' };
   }

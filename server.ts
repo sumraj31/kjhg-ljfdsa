@@ -26,11 +26,12 @@ const { Pool } = pg;
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Port configuration: AI Studio dev environment expects port 3000
-const PORT = 3000;
+// Port configuration: Railway supplies process.env.PORT; default to 3000 for AI Studio / local
+const PORT = parseInt(process.env.PORT || '3000', 10);
 const isProd = process.env.NODE_ENV === 'production';
 
-// Explicit tombstone list of duplicate and deleted product IDs
+// Persistent tombstone storage of duplicate and deleted product IDs
+const deletedIdsFile = path.resolve(__dirname, 'src/data/deleted_ids.json');
 export const EXCLUDED_DUPLICATE_IDS = new Set<string>([
   'AK-073',
   'AK-148',
@@ -47,6 +48,59 @@ export const EXCLUDED_DUPLICATE_IDS = new Set<string>([
   'ak-097',
   'ak-97',
 ]);
+
+export const deletedProductIds = new Set<string>(EXCLUDED_DUPLICATE_IDS);
+
+// Load persisted deleted product IDs from disk
+try {
+  if (fs.existsSync(deletedIdsFile)) {
+    const raw = fs.readFileSync(deletedIdsFile, 'utf-8');
+    const parsed = JSON.parse(raw);
+    if (Array.isArray(parsed)) {
+      parsed.forEach((id: string) => {
+        if (id) {
+          deletedProductIds.add(String(id).trim());
+          deletedProductIds.add(String(id).trim().toUpperCase());
+          deletedProductIds.add(String(id).trim().toLowerCase());
+        }
+      });
+    }
+  }
+} catch (e) {}
+
+export function isDeletedProduct(id: string | undefined): boolean {
+  if (!id) return false;
+  const str = String(id).trim();
+  return (
+    deletedProductIds.has(str) ||
+    deletedProductIds.has(str.toUpperCase()) ||
+    deletedProductIds.has(str.toLowerCase())
+  );
+}
+
+export function recordDeletedProductId(id: string) {
+  if (!id) return;
+  const str = String(id).trim();
+  deletedProductIds.add(str);
+  deletedProductIds.add(str.toUpperCase());
+  deletedProductIds.add(str.toLowerCase());
+  try {
+    const list = Array.from(new Set(Array.from(deletedProductIds).map((s) => s.toUpperCase())));
+    fs.writeFileSync(deletedIdsFile, JSON.stringify(list, null, 2), 'utf-8');
+  } catch (e) {}
+}
+
+export function restoreProductId(id: string) {
+  if (!id) return;
+  const str = String(id).trim();
+  deletedProductIds.delete(str);
+  deletedProductIds.delete(str.toUpperCase());
+  deletedProductIds.delete(str.toLowerCase());
+  try {
+    const list = Array.from(new Set(Array.from(deletedProductIds).map((s) => s.toUpperCase())));
+    fs.writeFileSync(deletedIdsFile, JSON.stringify(list, null, 2), 'utf-8');
+  } catch (e) {}
+}
 
 // Real-Time Server-Sent Events (SSE) Client Pool
 const sseClients: Response[] = [];
@@ -121,7 +175,7 @@ function getBaselineProducts(): any[] {
   }
 
   return rawProducts
-    .filter((p: any) => !EXCLUDED_DUPLICATE_IDS.has(String(p.id).toUpperCase()) && !EXCLUDED_DUPLICATE_IDS.has(String(p.id)))
+    .filter((p: any) => !isDeletedProduct(p.id))
     .map((p: any, idx: number) => {
     let video_url = p.video_url || '';
     if (!video_url) {
@@ -164,13 +218,13 @@ function initializeCatalogStorage(): CatalogData {
       const parsed = JSON.parse(raw);
       if (Array.isArray(parsed.products) && parsed.products.length > 0) {
         const cleanProds = parsed.products.filter(
-          (p: any) => !EXCLUDED_DUPLICATE_IDS.has(String(p.id).toUpperCase()) && !EXCLUDED_DUPLICATE_IDS.has(String(p.id))
+          (p: any) => !isDeletedProduct(p.id)
         );
         return {
           products: cleanProds,
           categories: Array.isArray(parsed.categories) ? parsed.categories : [],
           media: Array.isArray(parsed.media)
-            ? parsed.media.filter((m: any) => !EXCLUDED_DUPLICATE_IDS.has(String(m.product_id).toUpperCase()))
+            ? parsed.media.filter((m: any) => !isDeletedProduct(m.product_id))
             : [],
         };
       }
@@ -419,7 +473,7 @@ async function initDatabase() {
       if (count === 0 && catalogData.products.length > 0) {
         console.log(`[Database] Fast batch-seeding ${catalogData.products.length} products to database...`);
         const validProds = catalogData.products.filter(
-          (p) => !EXCLUDED_DUPLICATE_IDS.has(p.id) && !EXCLUDED_DUPLICATE_IDS.has(String(p.id).toUpperCase())
+          (p) => !isDeletedProduct(p.id)
         );
         const BATCH_SIZE = 50;
         for (let i = 0; i < validProds.length; i += BATCH_SIZE) {
@@ -458,7 +512,7 @@ async function initDatabase() {
       } else if (count > 0) {
         // Load authoritative items from database
         const rows = await pgPool.query('SELECT * FROM store_items ORDER BY created_at DESC;');
-        const cleanRows = rows.rows.filter((r: any) => !EXCLUDED_DUPLICATE_IDS.has(r.id));
+        const cleanRows = rows.rows.filter((r: any) => !isDeletedProduct(r.id));
         if (cleanRows.length > 0) {
           catalogData.products = cleanRows;
         }
@@ -519,6 +573,21 @@ function verifyToken(token: string): { valid: boolean; email?: string } {
   }
 
   return { valid: true, email: ADMIN_USERNAME };
+}
+
+export function requireAdminAuth(req: Request, res: Response, next: NextFunction) {
+  const authHeader = req.headers.authorization;
+  const token =
+    (authHeader && authHeader.replace(/^Bearer\s+/i, '')) ||
+    (req.headers['x-admin-token'] as string) ||
+    req.body?.token ||
+    (req.query?.token as string);
+
+  const verification = verifyToken(String(token || ''));
+  if (!verification.valid) {
+    return res.status(401).json({ error: 'Unauthorized: Valid admin authentication required.' });
+  }
+  next();
 }
 
 // -------------------------------------------------------------
@@ -669,10 +738,15 @@ app.get('/api/realtime', (req: Request, res: Response) => {
   });
 });
 
+// Deleted product IDs registry
+app.get('/api/deleted-ids', (_req: Request, res: Response) => {
+  return res.json(Array.from(deletedProductIds));
+});
+
 // System Status Route
 app.get('/api/status', async (_req: Request, res: Response) => {
-  let storeItemCount = catalogData.products.filter((i) => !EXCLUDED_DUPLICATE_IDS.has(i.id)).length;
-  let publishedCount = catalogData.products.filter((i) => i.published !== false && !EXCLUDED_DUPLICATE_IDS.has(i.id)).length;
+  let storeItemCount = catalogData.products.filter((i) => !isDeletedProduct(i.id)).length;
+  let publishedCount = catalogData.products.filter((i) => i.published !== false && !isDeletedProduct(i.id)).length;
   let catCount = catalogData.categories.length;
 
   if (isDbConnected && pgPool) {
@@ -694,9 +768,9 @@ app.get('/api/status', async (_req: Request, res: Response) => {
       store_items: storeItemCount,
       published_products: publishedCount,
       categories: catCount,
-      product_media: catalogData.media.length,
-      total_photos: catalogData.media.filter((m) => m.media_type === 'image').length || storeItemCount,
-      products_with_videos: catalogData.products.filter((i) => Boolean(i.video_url) && !EXCLUDED_DUPLICATE_IDS.has(i.id)).length,
+      product_media: catalogData.media.filter((m) => !isDeletedProduct(m.product_id)).length,
+      total_photos: catalogData.media.filter((m) => m.media_type === 'image' && !isDeletedProduct(m.product_id)).length || storeItemCount,
+      products_with_videos: catalogData.products.filter((i) => Boolean(i.video_url) && !isDeletedProduct(i.id)).length,
     },
     timestamp: new Date().toISOString(),
   });
@@ -726,15 +800,15 @@ app.get('/api/products', async (req: Request, res: Response) => {
       query += ' ORDER BY created_at DESC;';
 
       const dbRes = await pgPool.query(query, values);
-      const cleanRows = dbRes.rows.filter((r: any) => !EXCLUDED_DUPLICATE_IDS.has(r.id) && !EXCLUDED_DUPLICATE_IDS.has(String(r.id).toUpperCase()));
+      const cleanRows = dbRes.rows.filter((r: any) => !isDeletedProduct(r.id));
       return res.json(cleanRows);
     } catch (e) {
       console.warn('[Database Query Error, falling back to local]:', e);
     }
   }
 
-  // Fallback to local catalog (always strictly excluding duplicate IDs)
-  let items = catalogData.products.filter((i) => !EXCLUDED_DUPLICATE_IDS.has(i.id) && !EXCLUDED_DUPLICATE_IDS.has(String(i.id).toUpperCase()));
+  // Fallback to local catalog (always strictly excluding deleted IDs)
+  let items = catalogData.products.filter((i) => !isDeletedProduct(i.id));
   if (category && category !== 'All' && category !== 'all') {
     items = items.filter((i) => i.category.toLowerCase() === String(category).toLowerCase());
   }
@@ -745,15 +819,40 @@ app.get('/api/products', async (req: Request, res: Response) => {
 });
 
 // Save (Create or Update) Product
-app.post('/api/products', async (req: Request, res: Response) => {
+app.post('/api/products', requireAdminAuth, async (req: Request, res: Response) => {
   const item = req.body;
-  if (!item || !item.name) {
+  if (!item || !item.name || !String(item.name).trim()) {
     return res.status(400).json({ error: 'Product name is required.' });
   }
 
   const now = new Date().toISOString();
-  const id = item.id || `AK-${Date.now().toString(36).toUpperCase()}`;
-  const slug = item.slug || `${item.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')}-${id.toLowerCase()}`;
+  const id = item.id ? String(item.id).trim() : `AK-${Date.now().toString(36).toUpperCase()}`;
+  const slug = item.slug || `${String(item.name).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')}-${id.toLowerCase()}`;
+
+  // If this product was previously in the deleted tombstones set, restore it
+  restoreProductId(id);
+
+  let cleanImageUrl = item.image_url || '/logo.png';
+  if (cleanImageUrl.startsWith('data:image/')) {
+    try {
+      const match = cleanImageUrl.match(/^data:image\/([a-zA-Z0-9]+);base64,(.+)$/);
+      if (match) {
+        const ext = match[1] === 'jpeg' ? 'jpg' : match[1];
+        const buffer = Buffer.from(match[2], 'base64');
+        const filename = `up_${Date.now()}_${id.toLowerCase().replace(/[^a-z0-9]/g, '')}.${ext}`;
+        const targetDir = path.resolve(__dirname, 'public/products');
+        if (!fs.existsSync(targetDir)) {
+          fs.mkdirSync(targetDir, { recursive: true });
+        }
+        fs.writeFileSync(path.resolve(targetDir, filename), buffer);
+        const distDir = path.resolve(__dirname, 'dist/products');
+        if (fs.existsSync(distDir)) {
+          fs.writeFileSync(path.resolve(distDir, filename), buffer);
+        }
+        cleanImageUrl = `/products/${filename}`;
+      }
+    } catch (e) {}
+  }
 
   const cleanItem = {
     ...item,
@@ -762,7 +861,8 @@ app.post('/api/products', async (req: Request, res: Response) => {
     name: String(item.name).trim(),
     category: String(item.category || 'Puja Thali').trim(),
     description: item.description || '',
-    image_url: item.image_url || '/logo.png',
+    image_url: cleanImageUrl,
+    image: cleanImageUrl,
     video_url: item.video_url || '',
     tags: item.tags || '',
     published: item.published !== false,
@@ -810,7 +910,7 @@ app.post('/api/products', async (req: Request, res: Response) => {
   }
 
   // Always keep local memory in sync
-  const existingIndex = catalogData.products.findIndex((p) => p.id === id);
+  const existingIndex = catalogData.products.findIndex((p) => p.id === id || String(p.id).toUpperCase() === id.toUpperCase());
   if (existingIndex >= 0) {
     catalogData.products[existingIndex] = cleanItem;
   } else {
@@ -831,9 +931,16 @@ app.post('/api/products', async (req: Request, res: Response) => {
 });
 
 // Delete Product
-app.delete('/api/products/:id', async (req: Request, res: Response) => {
+app.delete('/api/products/:id', requireAdminAuth, async (req: Request, res: Response) => {
   const id = req.params.id;
+  if (!id) {
+    return res.status(400).json({ error: 'Product ID is required.' });
+  }
 
+  // 1. Permanently record in persistent tombstones
+  recordDeletedProductId(id);
+
+  // 2. Delete from relational databases
   if (isDbConnected) {
     try {
       await executeDualWrite('DELETE FROM store_items WHERE id = $1;', [id]);
@@ -843,15 +950,13 @@ app.delete('/api/products/:id', async (req: Request, res: Response) => {
     }
   }
 
-  const initialLen = catalogData.products.length;
-  catalogData.products = catalogData.products.filter((p) => p.id !== id);
-  catalogData.media = catalogData.media.filter((m) => m.product_id !== id);
+  // 3. Remove from memory and file storage
+  catalogData.products = catalogData.products.filter((p) => p.id !== id && String(p.id).toUpperCase() !== id.toUpperCase());
+  catalogData.media = catalogData.media.filter((m) => m.product_id !== id && String(m.product_id).toUpperCase() !== id.toUpperCase());
 
-  if (catalogData.products.length !== initialLen) {
-    persistCatalogStorage();
-  }
+  persistCatalogStorage();
 
-  // Instant real-time broadcast of deletion to all devices
+  // 4. Instant real-time broadcast of deletion to all devices worldwide
   broadcastRealtimeUpdate({
     type: 'PRODUCT_DELETED',
     action: 'delete',
@@ -862,8 +967,10 @@ app.delete('/api/products/:id', async (req: Request, res: Response) => {
   return res.json({ success: true, id });
 });
 
+
+
 // Delete Product Video Only
-app.delete('/api/products/:id/video', async (req: Request, res: Response) => {
+app.delete('/api/products/:id/video', requireAdminAuth, async (req: Request, res: Response) => {
   const id = req.params.id;
 
   if (isDbConnected) {
@@ -873,12 +980,13 @@ app.delete('/api/products/:id/video', async (req: Request, res: Response) => {
     } catch (e) {}
   }
 
-  const target = catalogData.products.find((p) => p.id === id);
+  const target = catalogData.products.find((p) => p.id === id || String(p.id).toUpperCase() === String(id).toUpperCase());
   if (target) {
     target.video_url = '';
     target.updated_at = new Date().toISOString();
     catalogData.media = catalogData.media.filter((m) => !(m.product_id === id && m.media_type === 'video'));
     persistCatalogStorage();
+    broadcastRealtimeUpdate({ type: 'PRODUCT_SAVED', action: 'save', item: target, timestamp: Date.now() });
     return res.json({ success: true });
   }
   return res.status(404).json({ error: 'Product not found' });
@@ -898,15 +1006,31 @@ app.get('/api/categories', async (_req: Request, res: Response) => {
 });
 
 // Save Category
-app.post('/api/categories', async (req: Request, res: Response) => {
+app.post('/api/categories', requireAdminAuth, async (req: Request, res: Response) => {
   const cat = req.body;
-  if (!cat || !cat.name) {
+  if (!cat || !cat.name || !String(cat.name).trim()) {
     return res.status(400).json({ error: 'Category name is required' });
   }
 
   const cleanName = String(cat.name).trim();
   const id = cat.id || `cat-${Date.now().toString(36).toUpperCase()}`;
   const now = new Date().toISOString();
+
+  // If category was renamed, propagate change to existing products
+  if (cat.old_name && String(cat.old_name).trim().toLowerCase() !== cleanName.toLowerCase()) {
+    const oldNorm = String(cat.old_name).trim().toLowerCase();
+    for (const p of catalogData.products) {
+      if (p.category && p.category.trim().toLowerCase() === oldNorm) {
+        p.category = cleanName;
+        p.updated_at = now;
+      }
+    }
+    if (isDbConnected && pgPool) {
+      try {
+        await executeDualWrite('UPDATE store_items SET category = $1, updated_at = NOW() WHERE LOWER(category) = $2;', [cleanName, oldNorm]);
+      } catch (e) {}
+    }
+  }
 
   const categoryItem = {
     id,
@@ -940,7 +1064,7 @@ app.post('/api/categories', async (req: Request, res: Response) => {
 });
 
 // Delete Category
-app.delete('/api/categories/:id', async (req: Request, res: Response) => {
+app.delete('/api/categories/:id', requireAdminAuth, async (req: Request, res: Response) => {
   const id = req.params.id;
   const cat = catalogData.categories.find((c) => c.id === id);
   if (!cat) {
@@ -972,11 +1096,11 @@ app.get('/api/videos', async (_req: Request, res: Response) => {
     try {
       const vRes = await pgPool.query("SELECT * FROM store_items WHERE video_url IS NOT NULL AND video_url != '' ORDER BY created_at DESC;");
       if (vRes.rows.length > 0) {
-        return res.json(vRes.rows);
+        return res.json(vRes.rows.filter((r: any) => !isDeletedProduct(r.id)));
       }
     } catch (e) {}
   }
-  const vids = catalogData.products.filter((p) => Boolean(p.video_url));
+  const vids = catalogData.products.filter((p) => Boolean(p.video_url) && !isDeletedProduct(p.id));
   return res.json(vids);
 });
 
@@ -990,28 +1114,50 @@ app.get('/api/media', async (req: Request, res: Response) => {
         : 'SELECT * FROM product_media ORDER BY created_at DESC;';
       const mRes = productId ? await pgPool.query(q, [productId]) : await pgPool.query(q);
       if (mRes.rows.length > 0) {
-        return res.json(mRes.rows);
+        return res.json(mRes.rows.filter((m: any) => !isDeletedProduct(m.product_id)));
       }
     } catch (e) {}
   }
 
   if (productId) {
-    return res.json(catalogData.media.filter((m) => m.product_id === String(productId)));
+    return res.json(catalogData.media.filter((m) => m.product_id === String(productId) && !isDeletedProduct(m.product_id)));
   }
-  return res.json(catalogData.media);
+  return res.json(catalogData.media.filter((m) => !isDeletedProduct(m.product_id)));
 });
 
 // Save Media Item
-app.post('/api/media', async (req: Request, res: Response) => {
+app.post('/api/media', requireAdminAuth, async (req: Request, res: Response) => {
   const item = req.body;
   if (!item || !item.storage_path) {
     return res.status(400).json({ error: 'Media storage path is required' });
   }
 
+  let finalStoragePath = item.storage_path;
+  if (finalStoragePath.startsWith('data:image/')) {
+    try {
+      const match = finalStoragePath.match(/^data:image\/([a-zA-Z0-9]+);base64,(.+)$/);
+      if (match) {
+        const ext = match[1] === 'jpeg' ? 'jpg' : match[1];
+        const buffer = Buffer.from(match[2], 'base64');
+        const filename = `up_med_${Date.now()}_${Math.random().toString(36).substring(2, 7)}.${ext}`;
+        const targetDir = path.resolve(__dirname, 'public/products');
+        if (!fs.existsSync(targetDir)) {
+          fs.mkdirSync(targetDir, { recursive: true });
+        }
+        fs.writeFileSync(path.resolve(targetDir, filename), buffer);
+        const distDir = path.resolve(__dirname, 'dist/products');
+        if (fs.existsSync(distDir)) {
+          fs.writeFileSync(path.resolve(distDir, filename), buffer);
+        }
+        finalStoragePath = `/products/${filename}`;
+      }
+    } catch (e) {}
+  }
+
   const mediaItem = {
     id: item.id || `MED-${Date.now().toString(36).toUpperCase()}`,
     product_id: item.product_id || '',
-    storage_path: item.storage_path,
+    storage_path: finalStoragePath,
     media_type: item.media_type || 'image',
     file_name: item.file_name || 'media_item',
     file_size: item.file_size || 0,
@@ -1036,7 +1182,7 @@ app.post('/api/media', async (req: Request, res: Response) => {
 });
 
 // Delete Media Item
-app.delete('/api/media/:id', async (req: Request, res: Response) => {
+app.delete('/api/media/:id', requireAdminAuth, async (req: Request, res: Response) => {
   const id = req.params.id;
   if (isDbConnected) {
     try {
@@ -1272,23 +1418,24 @@ async function startServer() {
     });
   }
 
-  // Always bind on AI Studio Port 3000
-  app.listen(PORT, '0.0.0.0', () => {
-    console.log(`[Anmol Kala Server] Running on http://0.0.0.0:${PORT}`);
+  // Bind to Railway/AI Studio host and port
+  const server = app.listen(PORT, '0.0.0.0', () => {
+    console.log(`[Anmol Kala Server] Running on http://0.0.0.0:${PORT} (env: ${isProd ? 'production' : 'development'})`);
   });
 
-  const envPort = process.env.PORT ? parseInt(process.env.PORT, 10) : 0;
-  if (envPort && envPort !== PORT) {
-    try {
-      app.listen(envPort, '0.0.0.0', () => {
-        console.log(`[Anmol Kala Server] Also running on container port http://0.0.0.0:${envPort}`);
-      });
-    } catch (e) {}
-  }
+  // Graceful shutdown handling for Railway zero-downtime deployments
+  const handleShutdown = (signal: string) => {
+    console.log(`[Server] ${signal} signal received. Closing HTTP server gracefully...`);
+    server.close(() => {
+      console.log('[Server] HTTP server closed cleanly.');
+      process.exit(0);
+    });
+  };
+
+  process.on('SIGTERM', () => handleShutdown('SIGTERM'));
+  process.on('SIGINT', () => handleShutdown('SIGINT'));
 }
 
-if (!process.env.VERCEL) {
-  startServer().catch((err) => {
-    console.error('[Server Fatal Error]:', err);
-  });
-}
+startServer().catch((err) => {
+  console.error('[Server Fatal Error]:', err);
+});

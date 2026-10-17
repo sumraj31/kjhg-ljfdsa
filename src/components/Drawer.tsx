@@ -10,6 +10,7 @@ interface DrawerProps {
   whatsappNumber: string;
   onOpenProduct: (product: Product) => void;
   onRemoveItem: (id: string, drawerType: NonNullable<DrawerType>) => void;
+  onClearAll?: (drawerType: NonNullable<DrawerType>) => void;
   onOpenCompareModal?: () => void;
 }
 
@@ -21,6 +22,7 @@ export const Drawer: React.FC<DrawerProps> = ({
   whatsappNumber,
   onOpenProduct,
   onRemoveItem,
+  onClearAll,
   onOpenCompareModal,
 }) => {
   if (!isOpen || !type) return null;
@@ -32,16 +34,97 @@ export const Drawer: React.FC<DrawerProps> = ({
     recent: 'Recently Viewed',
   };
 
+  const handleOrderAllCartOnWhatsApp = () => {
+    if (products.length === 0) return;
+    const origin = typeof window !== 'undefined' ? window.location.origin : 'https://anmolkala.in';
+    const itemsList = products
+      .map(
+        (p, index) =>
+          `${index + 1}. *${p.name}*\n   Item ID: ${p.id} | Category: ${p.category}\n   Link: ${origin}/product/${p.slug}`
+      )
+      .join('\n\n');
+
+    const msg = `Hello AnmolKala,\n\nI would like to place an order / enquire about the following ${products.length} item(s) from my cart:\n\n${itemsList}\n\n*Total Items:* ${products.length}\nPlease confirm availability, total price including shipping, and customization options.`;
+
+    const waUrl = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(msg)}`;
+    window.open(waUrl, '_blank', 'noopener,noreferrer');
+  };
+
   return (
     <>
       <div className="drawer-backdrop" onClick={onClose} />
       <div className={`drawer open`} aria-modal="true" role="dialog">
         <div className="dhead">
-          <h2>{titles[type]}</h2>
+          <div>
+            <h2>{titles[type]}</h2>
+            {products.length > 0 && (
+              <span style={{ fontSize: '12px', color: '#64748b', fontWeight: 600 }}>
+                {products.length} {products.length === 1 ? 'item' : 'items'}
+              </span>
+            )}
+          </div>
           <button type="button" onClick={onClose} aria-label="Close drawer">
             ×
           </button>
         </div>
+
+        {type === 'saved' && products.length > 0 && (
+          <div
+            style={{
+              background: '#f0fdf4',
+              border: '1px solid #bbf7d0',
+              borderRadius: '8px',
+              padding: '12px',
+              marginBottom: '16px',
+            }}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+              <span style={{ fontSize: '13px', fontWeight: 700, color: '#166534' }}>
+                🛒 Cart Summary ({products.length})
+              </span>
+              {onClearAll && (
+                <button
+                  type="button"
+                  onClick={() => onClearAll(type)}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    color: '#991b1b',
+                    fontSize: '11px',
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                    textDecoration: 'underline',
+                    padding: 0,
+                  }}
+                >
+                  Clear Cart
+                </button>
+              )}
+            </div>
+            <button
+              type="button"
+              onClick={handleOrderAllCartOnWhatsApp}
+              style={{
+                width: '100%',
+                background: '#15803d',
+                color: '#ffffff',
+                border: 'none',
+                borderRadius: '6px',
+                padding: '10px 14px',
+                fontSize: '13px',
+                fontWeight: 700,
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '8px',
+                boxShadow: '0 2px 6px rgba(21, 128, 61, 0.25)',
+              }}
+            >
+              <span>💬</span> Order Entire Cart on WhatsApp ({products.length})
+            </button>
+          </div>
+        )}
 
         {type === 'compare' && products.length > 1 && onOpenCompareModal && (
           <div style={{ marginBottom: '14px' }}>

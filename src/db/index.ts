@@ -8,8 +8,9 @@ declare global {
 
 export const createPool = () => {
   if (!global._postgresPool) {
+    let poolInstance: any;
     if (process.env.SQL_HOST) {
-      global._postgresPool = new Pool({
+      poolInstance = new Pool({
         host: process.env.SQL_HOST,
         user: process.env.SQL_USER,
         password: process.env.SQL_PASSWORD,
@@ -19,21 +20,29 @@ export const createPool = () => {
       });
     } else if (process.env.DATABASE_URL) {
       const isLocal = process.env.DATABASE_URL.includes('localhost') || process.env.DATABASE_URL.includes('127.0.0.1');
-      global._postgresPool = new Pool({
+      poolInstance = new Pool({
         connectionString: process.env.DATABASE_URL,
         ssl: isLocal ? false : { rejectUnauthorized: false },
         max: 10,
         connectionTimeoutMillis: 15000,
       });
     } else {
-      global._postgresPool = new Pool();
+      poolInstance = {
+        query: async () => ({ rows: [] }),
+        connect: async () => ({ query: async () => ({ rows: [] }), release: () => {} }),
+        on: () => {},
+        end: async () => {},
+      };
     }
 
-    global._postgresPool.on('error', (err) => {
-      console.error('Unexpected error on idle SQL pool client:', err);
-    });
+    if (poolInstance && typeof poolInstance.on === 'function') {
+      poolInstance.on('error', (err: any) => {
+        console.error('Unexpected error on idle SQL pool client:', err);
+      });
+    }
+    global._postgresPool = poolInstance;
   }
-  return global._postgresPool;
+  return global._postgresPool!;
 };
 
 let db: any;

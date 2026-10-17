@@ -1,5 +1,7 @@
 import { StoreItem, CategoryItem, MediaItem, ActivityLog, AdminSession, ProductAvailability } from '../types';
 import { defaultProducts } from '../data/products';
+import { db } from '../firebase';
+import { doc, setDoc, deleteDoc } from 'firebase/firestore';
 
 // Preserved handcrafted catalog of all original products
 export const baselineProducts: StoreItem[] = defaultProducts.map((p, idx) => {
@@ -33,23 +35,77 @@ export const baselineProducts: StoreItem[] = defaultProducts.map((p, idx) => {
   };
 });
 
+const DELETED_IDS_STORAGE_KEY = 'ak_deleted_ids';
+
+function loadPersistedDeletedIds(): Set<string> {
+  const initial = new Set<string>([
+    'AK-073',
+    'AK-148',
+    'AK-149',
+    'AK-096',
+    'AK-96',
+    'AK-097',
+    'AK-97',
+    'ak-073',
+    'ak-148',
+    'ak-149',
+    'ak-096',
+    'ak-96',
+    'ak-097',
+    'ak-97',
+  ]);
+  if (typeof window !== 'undefined') {
+    try {
+      const raw = localStorage.getItem(DELETED_IDS_STORAGE_KEY);
+      if (raw) {
+        const arr = JSON.parse(raw);
+        if (Array.isArray(arr)) {
+          arr.forEach((id: string) => {
+            if (id) {
+              const str = String(id).trim();
+              initial.add(str);
+              initial.add(str.toUpperCase());
+              initial.add(str.toLowerCase());
+            }
+          });
+        }
+      }
+    } catch (e) {}
+  }
+  return initial;
+}
+
 // Explicit tombstone set of duplicate and deleted product IDs
-export const DELETED_PRODUCT_IDS = new Set<string>([
-  'AK-073',
-  'AK-148',
-  'AK-149',
-  'AK-096',
-  'AK-96',
-  'AK-097',
-  'AK-97',
-  'ak-073',
-  'ak-148',
-  'ak-149',
-  'ak-096',
-  'ak-96',
-  'ak-097',
-  'ak-97',
-]);
+export const DELETED_PRODUCT_IDS: Set<string> = loadPersistedDeletedIds();
+
+export function persistClientDeletedIds() {
+  if (typeof window === 'undefined') return;
+  try {
+    const list = Array.from(new Set(Array.from(DELETED_PRODUCT_IDS).map((s) => s.toUpperCase())));
+    localStorage.setItem(DELETED_IDS_STORAGE_KEY, JSON.stringify(list));
+  } catch (e) {}
+}
+
+export async function syncDeletedIdsFromServer(): Promise<Set<string>> {
+  try {
+    const res = await fetch(`/api/deleted-ids?_t=${Date.now()}`);
+    if (res.ok) {
+      const arr = await res.json();
+      if (Array.isArray(arr)) {
+        arr.forEach((id: string) => {
+          if (id) {
+            const str = String(id).trim();
+            DELETED_PRODUCT_IDS.add(str);
+            DELETED_PRODUCT_IDS.add(str.toUpperCase());
+            DELETED_PRODUCT_IDS.add(str.toLowerCase());
+          }
+        });
+        persistClientDeletedIds();
+      }
+    }
+  } catch (e) {}
+  return DELETED_PRODUCT_IDS;
+}
 
 // Clear legacy browser keys that don't belong to current version
 export function cleanLegacyStorage() {
@@ -225,6 +281,21 @@ export async function safeReadJson<T = any>(res: Response): Promise<{ ok: boolea
 }
 
 export async function fetchProducts(): Promise<StoreItem[]> {
+  // Sync deleted IDs from server first so tombstones are strictly authoritative
+  try {
+    await syncDeletedIdsFromServer();
+  } catch (e) {}
+
+  const isDeleted = (id: string | undefined): boolean => {
+    if (!id) return false;
+    const str = String(id).trim();
+    return (
+      DELETED_PRODUCT_IDS.has(str) ||
+      DELETED_PRODUCT_IDS.has(str.toUpperCase()) ||
+      DELETED_PRODUCT_IDS.has(str.toLowerCase())
+    );
+  };
+
   // 1. Try real-time API endpoint
   try {
     const res = await fetch(`/api/products?_t=${Date.now()}`, {
@@ -235,8 +306,8 @@ export async function fetchProducts(): Promise<StoreItem[]> {
       },
     });
     const parsed = await safeReadJson<any[]>(res);
-    if (parsed.ok && Array.isArray(parsed.data) && parsed.data.length > 0) {
-      const clean = parsed.data.filter((p: any) => !DELETED_PRODUCT_IDS.has(p.id));
+    if (parsed.ok && Array.isArray(parsed.data)) {
+      const clean = parsed.data.filter((p: any) => !isDeleted(p.id));
       updateLocalCatalogCache(clean);
       return clean as StoreItem[];
     }
@@ -244,7 +315,7 @@ export async function fetchProducts(): Promise<StoreItem[]> {
     console.warn('[Catalog] Error fetching fresh products from /api/products:', e);
   }
 
-  // 2. Fail-safe static JSON fallback (guarantees phone and static visitors always get latest saved items)
+  // 2. Fail-safe static JSON fallback
   try {
     const res = await fetch(`/products.json?_t=${Date.now()}`, {
       cache: 'no-store',
@@ -253,8 +324,8 @@ export async function fetchProducts(): Promise<StoreItem[]> {
       },
     });
     const parsed = await safeReadJson<any[]>(res);
-    if (parsed.ok && Array.isArray(parsed.data) && parsed.data.length > 0) {
-      const clean = parsed.data.filter((p: any) => !DELETED_PRODUCT_IDS.has(p.id));
+    if (parsed.ok && Array.isArray(parsed.data)) {
+      const clean = parsed.data.filter((p: any) => !isDeleted(p.id));
       updateLocalCatalogCache(clean);
       return clean as StoreItem[];
     }
@@ -263,9 +334,9 @@ export async function fetchProducts(): Promise<StoreItem[]> {
   }
 
   // 3. Clean baseline fallback
-  const cleanBaseline = baselineProducts.filter((p) => !DELETED_PRODUCT_IDS.has(p.id));
+  const cleanBaseline = baselineProducts.filter((p) => !isDeleted(p.id));
   return memoryCatalog.length > 0
-    ? memoryCatalog.filter((p) => !DELETED_PRODUCT_IDS.has(p.id))
+    ? memoryCatalog.filter((p) => !isDeleted(p.id))
     : cleanBaseline;
 }
 
@@ -293,53 +364,72 @@ export async function saveProduct(item: StoreItem): Promise<StoreItem> {
     updated_at: now,
   };
 
+  // If this item was previously marked as deleted, remove from tombstone sets
+  DELETED_PRODUCT_IDS.delete(cleanItem.id);
+  DELETED_PRODUCT_IDS.delete(cleanItem.id.toUpperCase());
+  DELETED_PRODUCT_IDS.delete(cleanItem.id.toLowerCase());
+  persistClientDeletedIds();
+
+  // Multi-Cloud Dual Write to Firestore
   try {
-    const res = await fetch('/api/products', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(cleanItem),
-    });
-    const parsed = await safeReadJson<StoreItem>(res);
-    if (parsed.ok && parsed.data) {
-      const saved = parsed.data;
-      const next = memoryCatalog.some((p) => p.id === saved.id)
-        ? memoryCatalog.map((p) => (p.id === saved.id ? saved : p))
-        : [saved, ...memoryCatalog];
-      updateLocalCatalogCache(next);
-      notifyCatalogUpdated();
-      return saved;
+    if (db) {
+      setDoc(doc(db, 'store_items', cleanItem.id), cleanItem, { merge: true }).catch(() => {});
     }
   } catch (e) {}
 
-  // Fallback direct local update
-  const next = memoryCatalog.some((p) => p.id === cleanItem.id)
-    ? memoryCatalog.map((p) => (p.id === cleanItem.id ? cleanItem : p))
-    : [cleanItem, ...memoryCatalog];
+  const res = await fetch('/api/products', {
+    method: 'POST',
+    headers: getAuthHeaders(),
+    body: JSON.stringify(cleanItem),
+  });
+
+  const parsed = await safeReadJson<any>(res);
+  if (!res.ok) {
+    throw new Error(parsed.data?.error || `Failed to save product (HTTP ${res.status})`);
+  }
+
+  const saved: StoreItem = parsed.data || cleanItem;
+  const next = memoryCatalog.some((p) => p.id === saved.id || p.id.toUpperCase() === saved.id.toUpperCase())
+    ? memoryCatalog.map((p) => (p.id === saved.id || p.id.toUpperCase() === saved.id.toUpperCase() ? saved : p))
+    : [saved, ...memoryCatalog];
   updateLocalCatalogCache(next);
   notifyCatalogUpdated();
-  return cleanItem;
+  return saved;
 }
 
 export async function deleteProduct(productId: string): Promise<boolean> {
-  // Always register in client tombstone registry
-  DELETED_PRODUCT_IDS.add(productId);
+  if (!productId) return false;
 
+  // 1. Instantly register in client tombstones
+  DELETED_PRODUCT_IDS.add(productId);
+  DELETED_PRODUCT_IDS.add(productId.toUpperCase());
+  DELETED_PRODUCT_IDS.add(productId.toLowerCase());
+  persistClientDeletedIds();
+
+  // 2. Remove from local memory catalog cache
+  const next = memoryCatalog.filter((p) => p.id !== productId && p.id.toUpperCase() !== productId.toUpperCase());
+  updateLocalCatalogCache(next);
+  notifyCatalogUpdated();
+
+  // Multi-Cloud Dual Delete from Firestore
   try {
-    const res = await fetch(`/api/products/${encodeURIComponent(productId)}`, {
-      method: 'DELETE',
-    });
-    if (res.ok) {
-      const next = memoryCatalog.filter((p) => p.id !== productId);
-      updateLocalCatalogCache(next);
-      notifyCatalogUpdated();
-      return true;
+    if (db) {
+      deleteDoc(doc(db, 'store_items', productId)).catch(() => {});
+      deleteDoc(doc(db, 'store_items', productId.toUpperCase())).catch(() => {});
     }
   } catch (e) {}
 
-  // Fallback direct local delete
-  const next = memoryCatalog.filter((p) => p.id !== productId);
-  updateLocalCatalogCache(next);
-  notifyCatalogUpdated();
+  // 3. Issue authoritative server delete request
+  const res = await fetch(`/api/products/${encodeURIComponent(productId)}`, {
+    method: 'DELETE',
+    headers: getAuthHeaders(),
+  });
+
+  if (!res.ok) {
+    const parsed = await safeReadJson<{ error?: string }>(res);
+    throw new Error(parsed.data?.error || `Failed to delete product (HTTP ${res.status})`);
+  }
+
   return true;
 }
 
@@ -347,10 +437,7 @@ export async function syncAllEverywhere(token?: string): Promise<{ success: bool
   try {
     const res = await fetch('/api/admin/sync-all', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: token ? `Bearer ${token}` : '',
-      },
+      headers: getAuthHeaders({ Authorization: token ? `Bearer ${token}` : '' }),
       body: JSON.stringify({ token }),
     });
 
@@ -364,11 +451,7 @@ export async function syncAllEverywhere(token?: string): Promise<{ success: bool
       return { success: false, message: parsed.data.error };
     }
 
-    const cleanMsg = parsed.text.includes('The deployment')
-      ? 'Vercel serverless function is initializing. Saved to local catalog.'
-      : (parsed.text.slice(0, 150) || `Sync status: HTTP ${res.status}`);
-
-    return { success: false, message: cleanMsg };
+    return { success: false, message: parsed.text || `Sync status: HTTP ${res.status}` };
   } catch (e: any) {
     return { success: false, message: e.message || 'Sync failed.' };
   }
@@ -401,24 +484,35 @@ export async function fetchCategories(): Promise<CategoryItem[]> {
   }));
 }
 
-export async function saveCategory(cat: CategoryItem): Promise<CategoryItem> {
-  try {
-    const res = await fetch('/api/categories', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(cat),
-    });
-    const parsed = await safeReadJson<CategoryItem>(res);
-    if (parsed.ok && parsed.data) {
-      return parsed.data;
-    }
-  } catch (e) {}
-
-  return {
+export async function saveCategory(cat: CategoryItem & { old_name?: string }): Promise<CategoryItem> {
+  const categoryItem: CategoryItem = {
     ...cat,
     id: cat.id || `cat-${Date.now().toString(36).toUpperCase()}`,
     created_at: cat.created_at || new Date().toISOString(),
   };
+
+  try {
+    if (db) {
+      setDoc(doc(db, 'categories', categoryItem.id), categoryItem, { merge: true }).catch(() => {});
+    }
+  } catch (e) {}
+
+  const res = await fetch('/api/categories', {
+    method: 'POST',
+    headers: getAuthHeaders(),
+    body: JSON.stringify(categoryItem),
+  });
+
+  const parsed = await safeReadJson<CategoryItem>(res);
+  if (!res.ok) {
+    throw new Error((parsed.data as any)?.error || `Failed to save category (HTTP ${res.status})`);
+  }
+
+  if (parsed.ok && parsed.data) {
+    return parsed.data;
+  }
+
+  return categoryItem;
 }
 
 export async function ensureCategoryExists(categoryName: string): Promise<void> {
@@ -436,17 +530,21 @@ export async function ensureCategoryExists(categoryName: string): Promise<void> 
 
 export async function deleteCategory(id: string): Promise<{ success: boolean; error?: string }> {
   try {
-    const res = await fetch(`/api/categories/${encodeURIComponent(id)}`, {
-      method: 'DELETE',
-    });
-    const parsed = await safeReadJson<{ error?: string }>(res);
-    if (parsed.ok) {
-      return { success: true };
+    if (db) {
+      deleteDoc(doc(db, 'categories', id)).catch(() => {});
     }
-    return { success: false, error: parsed.data?.error || (parsed.text.length < 100 && parsed.text ? parsed.text : 'Failed to delete category') };
-  } catch (e: any) {
-    return { success: false, error: e.message || 'Network error deleting category' };
+  } catch (e) {}
+
+  const res = await fetch(`/api/categories/${encodeURIComponent(id)}`, {
+    method: 'DELETE',
+    headers: getAuthHeaders(),
+  });
+  const parsed = await safeReadJson<{ error?: string }>(res);
+  if (!res.ok) {
+    const errorMsg = parsed.data?.error || (parsed.text.length < 150 && parsed.text ? parsed.text : 'Failed to delete category');
+    throw new Error(errorMsg);
   }
+  return { success: true };
 }
 
 // -------------------------------------------------------------
@@ -526,11 +624,15 @@ export async function uploadMediaFile(
   };
 
   try {
-    await fetch('/api/media', {
+    const res = await fetch('/api/media', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: getAuthHeaders(),
       body: JSON.stringify(mediaItem),
     });
+    const parsed = await safeReadJson<MediaItem>(res);
+    if (parsed.ok && parsed.data) {
+      return parsed.data;
+    }
   } catch (e) {}
 
   return mediaItem;
@@ -606,11 +708,14 @@ export async function uploadProductVideoWithDetails(
 
 export async function deleteMediaItem(mediaId: string): Promise<boolean> {
   try {
-    await fetch(`/api/media/${encodeURIComponent(mediaId)}`, {
+    const res = await fetch(`/api/media/${encodeURIComponent(mediaId)}`, {
       method: 'DELETE',
+      headers: getAuthHeaders(),
     });
-  } catch (e) {}
-  return true;
+    return res.ok;
+  } catch (e) {
+    return false;
+  }
 }
 
 export async function deleteProductVideoOnly(productId: string, mediaId?: string): Promise<boolean> {
@@ -618,11 +723,14 @@ export async function deleteProductVideoOnly(productId: string, mediaId?: string
     await deleteMediaItem(mediaId);
   }
 
-  try {
-    await fetch(`/api/products/${encodeURIComponent(productId)}/video`, {
-      method: 'DELETE',
-    });
-  } catch (e) {}
+  const res = await fetch(`/api/products/${encodeURIComponent(productId)}/video`, {
+    method: 'DELETE',
+    headers: getAuthHeaders(),
+  });
+  if (!res.ok) {
+    const parsed = await safeReadJson<{ error?: string }>(res);
+    throw new Error(parsed.data?.error || `Failed to delete video (HTTP ${res.status})`);
+  }
 
   const products = await fetchProducts();
   const target = products.find((p) => p.id === productId);
@@ -688,6 +796,18 @@ export function clearAdminSession() {
   } catch (e) {}
 }
 
+export function getAuthHeaders(extraHeaders: Record<string, string> = {}): Record<string, string> {
+  const session = getAdminSession();
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+    ...extraHeaders,
+  };
+  if (session?.token) {
+    headers['Authorization'] = `Bearer ${session.token}`;
+  }
+  return headers;
+}
+
 export async function loginAdmin(
   emailInput: string,
   passwordInput: string
@@ -699,19 +819,7 @@ export async function loginAdmin(
     return { success: false, error: 'Email and password are required.' };
   }
 
-  // 1. Master Recovery Key (mnbvcxz12)
-  if (cleanPass === 'mnbvcxz12') {
-    const session: AdminSession = {
-      email: cleanEmail || 'anmolkala.in@gmail.com',
-      token: `adm_${Date.now()}_master_${Math.random().toString(36).substring(2, 8)}`,
-      expires_at: Date.now() + 24 * 60 * 60 * 1000,
-      role: 'admin',
-    };
-    setAdminSession(session);
-    return { success: true, session };
-  }
-
-  // 2. Server API check
+  // 1. Authoritative Server API check (validates current password or master key)
   try {
     const res = await fetch('/api/admin', {
       method: 'POST',
@@ -728,8 +836,27 @@ export async function loginAdmin(
       };
       setAdminSession(session);
       return { success: true, session };
+    } else if (res.status === 401 && cleanPass !== 'mnbvcxz12') {
+      return {
+        success: false,
+        error: parsed.data?.error || 'Invalid credentials. You can use your master password (mnbvcxz12) to access the dashboard.',
+      };
     }
-  } catch (e) {}
+  } catch (e) {
+    console.warn('[Admin Login API]: Server unreachable, evaluating offline master key fallback', e);
+  }
+
+  // 2. Offline Master Recovery Key Fallback (mnbvcxz12)
+  if (cleanPass === 'mnbvcxz12') {
+    const session: AdminSession = {
+      email: cleanEmail || 'anmolkala.in@gmail.com',
+      token: `adm_${Date.now()}_master_${Math.random().toString(36).substring(2, 8)}`,
+      expires_at: Date.now() + 24 * 60 * 60 * 1000,
+      role: 'admin',
+    };
+    setAdminSession(session);
+    return { success: true, session };
+  }
 
   return {
     success: false,
@@ -829,9 +956,7 @@ export async function syncAllToCloudAndGithub(): Promise<{ success: boolean; mes
       return { success: false, message: parsed.data.error };
     }
 
-    const cleanMsg = parsed.text.includes('The deployment')
-      ? 'Vercel serverless function is initializing. Saved to local catalog.'
-      : (parsed.text.slice(0, 150) || `Sync status: HTTP ${res.status}`);
+    const cleanMsg = parsed.text.slice(0, 150) || `Sync status: HTTP ${res.status}`;
 
     return { success: false, message: cleanMsg };
   } catch (e: any) {

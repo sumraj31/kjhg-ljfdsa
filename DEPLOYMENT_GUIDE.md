@@ -18,7 +18,12 @@ This guide explains how the deployment works, how the "Application failed to res
    - `isProd` was only checking `process.env.NODE_ENV === 'production'`. If `NODE_ENV` was omitted in Railway, it attempted to run Vite in dev middleware mode inside the container.
    - **Fixed**: `isProd` now checks `RAILWAY_ENVIRONMENT`, `PORT`, and whether `dist/index.html` exists.
 
-4. **Health Check Speed & Port Binding**:
+4. **Node.js Version Mismatch (`styleText` in `node:util` error)**:
+   - Modern Vite 8 / Rolldown requires Node.js >= 20.12 or Node.js 22 because it uses `styleText` from `node:util`.
+   - Railway's default Nixpacks image without explicit Node version configuration defaults to Node.js 18.20.5, throwing `SyntaxError: The requested module 'node:util' does not provide an export named 'styleText'`.
+   - **Fixed**: We added `.nvmrc` (`22`), `.node-version` (`22`), and `nixpacks.toml` (`nodejs_22`), locking Node 22 across all build environments.
+
+5. **Health Check Speed & Port Binding**:
    - Railway health checks now hit `/api/health` and `/health` immediately without waiting for database pool timeouts.
    - Timeout increased to 120s in both `railway.json` and `railway.toml`.
    - Single-Page Application (SPA) fallback safely verifies `dist/index.html` so `res.sendFile` never crashes.
@@ -43,12 +48,14 @@ This guide explains how the deployment works, how the "Application failed to res
 
 ---
 
-### 2. `NODE_ENV`
-- **Value:** `production`
-- **Where to set it:** You create this variable directly inside Railway:
+### 2. `NODE_ENV` & `NIXPACKS_NODE_VERSION`
+- **`NODE_ENV`:** `production`
+- **`NIXPACKS_NODE_VERSION`:** `22`
+- **Where to set them:** Directly inside Railway:
   1. Open [Railway Dashboard](https://railway.com).
   2. Click your service box -> Go to **Variables** tab -> Click **+ Add Variable**.
-  3. Name: `NODE_ENV`, Value: `production`.
+  3. Add `NODE_ENV` = `production`.
+  4. Add `NIXPACKS_NODE_VERSION` = `22`.
 
 ---
 
